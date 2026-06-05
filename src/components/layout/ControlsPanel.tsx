@@ -1,3 +1,4 @@
+import { ImageModeControls } from '@/components/layout/ImageModeControls';
 import styles from './ControlsPanel.module.css';
 
 interface ControlsPanelProps {
@@ -29,10 +30,7 @@ export function ControlsPanel({
         <p className={styles.value}>Story — 1080 × 1920</p>
       </section>
 
-      <section className={styles.section}>
-        <h3 className={styles.label}>Image Mode</h3>
-        <p className={styles.value}>Crop (pre-flattened)</p>
-      </section>
+      <ImageModeControls />
 
       <section className={styles.section}>
         <h3 className={styles.label}>Export</h3>

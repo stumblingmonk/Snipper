@@ -1,10 +1,18 @@
 import { create } from 'zustand';
 import type { FormatKey, ImageMode } from '@/constants/formats';
 import {
+  DEFAULT_CROP_SETTINGS,
+  type CropSettings,
+} from '@/constants/imageSettings';
+import {
   DEFAULT_SOURCE_LOGO_ID,
   type SourceLogoSelectionId,
 } from '@/constants/sourceLogos';
 import { appendWithSpacing } from '@/utils/appendText';
+import {
+  createArticleImageObjectUrl,
+  isRevokableObjectUrl,
+} from '@/utils/articleImageUpload';
 import { createLogoObjectUrl } from '@/utils/logoUpload';
 
 /** Default content seeded from Phase 1 stress test for continuity. */
@@ -39,8 +47,12 @@ export interface SnipperState {
   customLogoObjectUrl: string | null;
   backgroundObjectUrl: string | null;
   articleImageObjectUrl: string | null;
+  uploadedArticleImageObjectUrl: string | null;
   flattenedCropUrl: string | null;
   imageMode: ImageMode;
+  cropZoom: number;
+  cropOffsetX: number;
+  cropOffsetY: number;
   exportStatus: 'idle' | 'exporting' | 'done' | 'error';
   exportError: string | null;
   lastExportSize: { width: number; height: number } | null;
@@ -53,6 +65,7 @@ export interface SnipperState {
   scratchpadSelection: ScratchpadSelection;
   caption: string;
   logoUploadError: string | null;
+  articleImageUploadError: string | null;
   setHeadlineFontSize: (size: number) => void;
   setExcerptFontSize: (size: number) => void;
   setFlattenedCropUrl: (url: string | null) => void;
@@ -72,9 +85,22 @@ export interface SnipperState {
   setSelectedSourceLogoId: (id: SourceLogoSelectionId) => void;
   uploadCustomLogo: (file: File) => void;
   clearCustomLogo: () => void;
+  setImageMode: (mode: ImageMode) => void;
+  setCropZoom: (zoom: number) => void;
+  setCropOffsetX: (offsetX: number) => void;
+  setCropOffsetY: (offsetY: number) => void;
+  resetCrop: () => void;
+  uploadArticleImage: (file: File) => void;
+  clearUploadedArticleImage: () => void;
   useSelectedAsExcerpt: () => void;
   appendSelectedToExcerpt: () => void;
   clearScratchpad: () => void;
+}
+
+function revokeIfBlob(url: string | null): void {
+  if (isRevokableObjectUrl(url)) {
+    URL.revokeObjectURL(url);
+  }
 }
 
 export const useSnipperStore = create<SnipperState>((set, get) => ({
@@ -85,8 +111,12 @@ export const useSnipperStore = create<SnipperState>((set, get) => ({
   customLogoObjectUrl: null,
   backgroundObjectUrl: DEFAULT_CONTENT.backgroundUrl,
   articleImageObjectUrl: DEFAULT_CONTENT.articleImageUrl,
+  uploadedArticleImageObjectUrl: null,
   flattenedCropUrl: null,
   imageMode: 'crop',
+  cropZoom: DEFAULT_CROP_SETTINGS.zoom,
+  cropOffsetX: DEFAULT_CROP_SETTINGS.offsetX,
+  cropOffsetY: DEFAULT_CROP_SETTINGS.offsetY,
   exportStatus: 'idle',
   exportError: null,
   lastExportSize: null,
@@ -99,9 +129,16 @@ export const useSnipperStore = create<SnipperState>((set, get) => ({
   scratchpadSelection: EMPTY_SELECTION,
   caption: DEFAULT_CONTENT.caption,
   logoUploadError: null,
+  articleImageUploadError: null,
   setHeadlineFontSize: (headlineFontSize) => set({ headlineFontSize }),
   setExcerptFontSize: (excerptFontSize) => set({ excerptFontSize }),
-  setFlattenedCropUrl: (flattenedCropUrl) => set({ flattenedCropUrl }),
+  setFlattenedCropUrl: (flattenedCropUrl) => {
+    const previous = get().flattenedCropUrl;
+    if (previous && previous !== flattenedCropUrl) {
+      revokeIfBlob(previous);
+    }
+    set({ flattenedCropUrl });
+  },
   setExportStatus: (exportStatus, exportError = null, lastExportSize = null) =>
     set({ exportStatus, exportError, lastExportSize }),
   setSourceUrl: (sourceUrl) => set({ sourceUrl }),
@@ -117,9 +154,7 @@ export const useSnipperStore = create<SnipperState>((set, get) => ({
   uploadCustomLogo: (file) => {
     try {
       const { customLogoObjectUrl } = get();
-      if (customLogoObjectUrl) {
-        URL.revokeObjectURL(customLogoObjectUrl);
-      }
+      revokeIfBlob(customLogoObjectUrl);
 
       const objectUrl = createLogoObjectUrl(file);
       set({
@@ -135,9 +170,7 @@ export const useSnipperStore = create<SnipperState>((set, get) => ({
   },
   clearCustomLogo: () => {
     const { customLogoObjectUrl, selectedSourceLogoId } = get();
-    if (customLogoObjectUrl) {
-      URL.revokeObjectURL(customLogoObjectUrl);
-    }
+    revokeIfBlob(customLogoObjectUrl);
 
     set({
       customLogoObjectUrl: null,
@@ -146,6 +179,49 @@ export const useSnipperStore = create<SnipperState>((set, get) => ({
         selectedSourceLogoId === 'custom'
           ? DEFAULT_SOURCE_LOGO_ID
           : selectedSourceLogoId,
+    });
+  },
+  setImageMode: (imageMode) => set({ imageMode }),
+  setCropZoom: (cropZoom) => set({ cropZoom }),
+  setCropOffsetX: (cropOffsetX) => set({ cropOffsetX }),
+  setCropOffsetY: (cropOffsetY) => set({ cropOffsetY }),
+  resetCrop: () =>
+    set({
+      cropZoom: DEFAULT_CROP_SETTINGS.zoom,
+      cropOffsetX: DEFAULT_CROP_SETTINGS.offsetX,
+      cropOffsetY: DEFAULT_CROP_SETTINGS.offsetY,
+    }),
+  uploadArticleImage: (file) => {
+    try {
+      const { uploadedArticleImageObjectUrl } = get();
+      revokeIfBlob(uploadedArticleImageObjectUrl);
+
+      const objectUrl = createArticleImageObjectUrl(file);
+      set({
+        uploadedArticleImageObjectUrl: objectUrl,
+        articleImageObjectUrl: objectUrl,
+        articleImageUploadError: null,
+        cropZoom: DEFAULT_CROP_SETTINGS.zoom,
+        cropOffsetX: DEFAULT_CROP_SETTINGS.offsetX,
+        cropOffsetY: DEFAULT_CROP_SETTINGS.offsetY,
+      });
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : 'Article image upload failed';
+      set({ articleImageUploadError: message });
+    }
+  },
+  clearUploadedArticleImage: () => {
+    const { uploadedArticleImageObjectUrl } = get();
+    revokeIfBlob(uploadedArticleImageObjectUrl);
+
+    set({
+      uploadedArticleImageObjectUrl: null,
+      articleImageObjectUrl: DEFAULT_CONTENT.articleImageUrl,
+      articleImageUploadError: null,
+      cropZoom: DEFAULT_CROP_SETTINGS.zoom,
+      cropOffsetX: DEFAULT_CROP_SETTINGS.offsetX,
+      cropOffsetY: DEFAULT_CROP_SETTINGS.offsetY,
     });
   },
   useSelectedAsExcerpt: () => {
@@ -164,3 +240,12 @@ export const useSnipperStore = create<SnipperState>((set, get) => ({
 
 export const selectHasScratchpadSelection = (state: SnipperState): boolean =>
   state.scratchpadSelection.text.length > 0;
+
+export const selectCropSettings = (state: SnipperState): CropSettings => ({
+  zoom: state.cropZoom,
+  offsetX: state.cropOffsetX,
+  offsetY: state.cropOffsetY,
+});
+
+export const selectHasUploadedArticleImage = (state: SnipperState): boolean =>
+  state.uploadedArticleImageObjectUrl !== null;

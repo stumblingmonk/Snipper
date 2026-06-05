@@ -1,9 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FORMATS } from '@/constants/formats';
+import { STORY_ARTICLE_IMAGE_FRAME } from '@/constants/imageSettings';
 import { exportCardPng } from '@/utils/exportCard';
 import { flattenImage } from '@/utils/flattenImage';
 import { resolveSourceLogoUrl } from '@/store/selectors';
-import { useSnipperStore } from '@/store/snipperStore';
+import {
+  useSnipperStore,
+} from '@/store/snipperStore';
 import { StandardArticleCard } from '@/components/cards/StandardArticleCard';
 import { ControlsPanel } from '@/components/layout/ControlsPanel';
 import { ContentWorkspace } from '@/components/layout/ContentWorkspace';
@@ -11,7 +14,6 @@ import { PreviewPanel } from '@/components/layout/PreviewPanel';
 import styles from './App.module.css';
 
 const STORY = FORMATS.story;
-const IMAGE_SLOT = { width: 1080, height: 640 };
 
 export default function App() {
   const exportRef = useRef<HTMLDivElement>(null);
@@ -24,6 +26,9 @@ export default function App() {
   const articleImageObjectUrl = useSnipperStore((s) => s.articleImageObjectUrl);
   const flattenedCropUrl = useSnipperStore((s) => s.flattenedCropUrl);
   const imageMode = useSnipperStore((s) => s.imageMode);
+  const cropZoom = useSnipperStore((s) => s.cropZoom);
+  const cropOffsetX = useSnipperStore((s) => s.cropOffsetX);
+  const cropOffsetY = useSnipperStore((s) => s.cropOffsetY);
   const exportStatus = useSnipperStore((s) => s.exportStatus);
   const exportError = useSnipperStore((s) => s.exportError);
   const lastExportSize = useSnipperStore((s) => s.lastExportSize);
@@ -41,20 +46,19 @@ export default function App() {
     }
 
     let cancelled = false;
-    let createdUrl: string | null = null;
 
     flattenImage({
       sourceUrl: articleImageObjectUrl,
-      outputWidth: IMAGE_SLOT.width,
-      outputHeight: IMAGE_SLOT.height,
+      outputWidth: STORY_ARTICLE_IMAGE_FRAME.width,
+      outputHeight: STORY_ARTICLE_IMAGE_FRAME.height,
       mode: imageMode,
+      crop: { zoom: cropZoom, offsetX: cropOffsetX, offsetY: cropOffsetY },
     })
       .then((url) => {
         if (cancelled) {
-          if (url !== articleImageObjectUrl) URL.revokeObjectURL(url);
+          URL.revokeObjectURL(url);
           return;
         }
-        createdUrl = url;
         setFlattenedCropUrl(url);
       })
       .catch((err: unknown) => {
@@ -63,11 +67,15 @@ export default function App() {
 
     return () => {
       cancelled = true;
-      if (createdUrl && createdUrl !== articleImageObjectUrl) {
-        URL.revokeObjectURL(createdUrl);
-      }
     };
-  }, [articleImageObjectUrl, imageMode, setFlattenedCropUrl]);
+  }, [
+    articleImageObjectUrl,
+    imageMode,
+    cropZoom,
+    cropOffsetX,
+    cropOffsetY,
+    setFlattenedCropUrl,
+  ]);
 
   const cardImageUrl =
     imageMode === 'none' ? null : flattenedCropUrl ?? articleImageObjectUrl;
@@ -102,14 +110,16 @@ export default function App() {
     imageUrl: cardImageUrl,
     headlineFontSize,
     excerptFontSize,
-    showImage: imageMode !== 'none',
+    showImage: imageMode !== 'none' && Boolean(cardImageUrl),
   };
 
   return (
     <div className={styles.app}>
       <header className={styles.topBar}>
         <h1 className={styles.appTitle}>SNIPPER</h1>
-        <span className={styles.phaseBadge}>Phase 3 — Source Logo Picker</span>
+        <span className={styles.phaseBadge}>
+          Phase 4 — Image Upload & Modes
+        </span>
       </header>
 
       <div className={styles.columns}>

@@ -1,22 +1,25 @@
 import type { ImageMode } from '@/constants/formats';
+import type { CropSettings } from '@/constants/imageSettings';
 
-export interface FlattenCropOptions {
+export interface FlattenImageOptions {
   sourceUrl: string;
   outputWidth: number;
   outputHeight: number;
   mode: ImageMode;
+  crop?: CropSettings;
 }
 
 /**
  * Pre-flattens crop/fit into a bitmap via canvas for reliable export.
- * Returns an object URL; caller must revoke when replacing.
+ * Returns an object URL for flattened output; caller must revoke when replacing.
  */
 export async function flattenImage({
   sourceUrl,
   outputWidth,
   outputHeight,
   mode,
-}: FlattenCropOptions): Promise<string> {
+  crop = { zoom: 1, offsetX: 0, offsetY: 0 },
+}: FlattenImageOptions): Promise<string> {
   const img = await loadImage(sourceUrl);
 
   const canvas = document.createElement('canvas');
@@ -28,40 +31,16 @@ export async function flattenImage({
   }
 
   if (mode === 'none') {
-    return sourceUrl;
+    throw new Error('flattenImage should not be called for none mode');
   }
 
   const srcAspect = img.naturalWidth / img.naturalHeight;
   const dstAspect = outputWidth / outputHeight;
 
-  let sx = 0;
-  let sy = 0;
-  let sw = img.naturalWidth;
-  let sh = img.naturalHeight;
-
   if (mode === 'crop') {
-    if (srcAspect > dstAspect) {
-      sw = img.naturalHeight * dstAspect;
-      sx = (img.naturalWidth - sw) / 2;
-    } else {
-      sh = img.naturalWidth / dstAspect;
-      sy = (img.naturalHeight - sh) / 2;
-    }
-    ctx.drawImage(img, sx, sy, sw, sh, 0, 0, outputWidth, outputHeight);
+    drawCropMode(ctx, img, outputWidth, outputHeight, srcAspect, dstAspect, crop);
   } else {
-    // fit — letterbox on solid dark background
-    ctx.fillStyle = '#111318';
-    ctx.fillRect(0, 0, outputWidth, outputHeight);
-    let dw = outputWidth;
-    let dh = outputHeight;
-    if (srcAspect > dstAspect) {
-      dh = outputWidth / srcAspect;
-    } else {
-      dw = outputHeight * srcAspect;
-    }
-    const dx = (outputWidth - dw) / 2;
-    const dy = (outputHeight - dh) / 2;
-    ctx.drawImage(img, 0, 0, img.naturalWidth, img.naturalHeight, dx, dy, dw, dh);
+    drawFitMode(ctx, img, outputWidth, outputHeight, srcAspect, dstAspect);
   }
 
   const blob = await new Promise<Blob>((resolve, reject) => {
@@ -72,6 +51,83 @@ export async function flattenImage({
   });
 
   return URL.createObjectURL(blob);
+}
+
+function drawCropMode(
+  ctx: CanvasRenderingContext2D,
+  img: HTMLImageElement,
+  outputWidth: number,
+  outputHeight: number,
+  srcAspect: number,
+  dstAspect: number,
+  crop: CropSettings,
+): void {
+  let sw = img.naturalWidth;
+  let sh = img.naturalHeight;
+  let sx = 0;
+  let sy = 0;
+
+  if (srcAspect > dstAspect) {
+    sw = img.naturalHeight * dstAspect;
+    sx = (img.naturalWidth - sw) / 2;
+  } else {
+    sh = img.naturalWidth / dstAspect;
+    sy = (img.naturalHeight - sh) / 2;
+  }
+
+  const zoom = Math.max(1, crop.zoom);
+  const zoomedWidth = sw / zoom;
+  const zoomedHeight = sh / zoom;
+  const maxPanX = (sw - zoomedWidth) / 2;
+  const maxPanY = (sh - zoomedHeight) / 2;
+  const centerX = sx + sw / 2 + crop.offsetX * maxPanX;
+  const centerY = sy + sh / 2 + crop.offsetY * maxPanY;
+
+  sx = clamp(centerX - zoomedWidth / 2, 0, img.naturalWidth - zoomedWidth);
+  sy = clamp(centerY - zoomedHeight / 2, 0, img.naturalHeight - zoomedHeight);
+  sw = zoomedWidth;
+  sh = zoomedHeight;
+
+  ctx.drawImage(img, sx, sy, sw, sh, 0, 0, outputWidth, outputHeight);
+}
+
+function drawFitMode(
+  ctx: CanvasRenderingContext2D,
+  img: HTMLImageElement,
+  outputWidth: number,
+  outputHeight: number,
+  srcAspect: number,
+  dstAspect: number,
+): void {
+  ctx.fillStyle = '#eef0f3';
+  ctx.fillRect(0, 0, outputWidth, outputHeight);
+
+  let drawWidth = outputWidth;
+  let drawHeight = outputHeight;
+
+  if (srcAspect > dstAspect) {
+    drawHeight = outputWidth / srcAspect;
+  } else {
+    drawWidth = outputHeight * srcAspect;
+  }
+
+  const dx = (outputWidth - drawWidth) / 2;
+  const dy = (outputHeight - drawHeight) / 2;
+  ctx.drawImage(
+    img,
+    0,
+    0,
+    img.naturalWidth,
+    img.naturalHeight,
+    dx,
+    dy,
+    drawWidth,
+    drawHeight,
+  );
+}
+
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), max);
 }
 
 function loadImage(src: string): Promise<HTMLImageElement> {

@@ -1,4 +1,5 @@
 import { useCallback, useRef } from 'react';
+import { ArticleImageUpload } from '@/components/layout/ArticleImageUpload';
 import { SourceLogoPicker } from '@/components/layout/SourceLogoPicker';
 import {
   selectHasScratchpadSelection,
@@ -103,6 +104,8 @@ export function ContentWorkspace() {
       </section>
 
       <SourceLogoPicker />
+
+      <ArticleImageUpload />
 
       <section className={styles.section}>
         <label className={styles.fieldLabel} htmlFor="headline">
