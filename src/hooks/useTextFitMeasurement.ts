@@ -1,17 +1,15 @@
 import { useLayoutEffect, useState } from 'react';
-import type { ImageMode } from '@/constants/formats';
+import type { FormatKey, ImageMode } from '@/constants/formats';
 import type { TextSizeStep } from '@/constants/textFit';
-import {
-  EXCERPT_TYPO,
-  HEADLINE_TYPO,
-  preferredFontSize,
-} from '@/constants/textFit';
+import { preferredFontSize } from '@/constants/textFit';
+import { getStandardArticleLayout } from '@/constants/standardArticleLayouts';
 import { measureTextFit } from '@/utils/textFitMeasure';
 import { useSnipperStore } from '@/store/snipperStore';
 
 interface UseTextFitMeasurementOptions {
   headlineZoneRef: React.RefObject<HTMLDivElement | null>;
   excerptZoneRef: React.RefObject<HTMLDivElement | null>;
+  formatKey: FormatKey;
   headline: string;
   excerpt: string;
   headlineSizeStep: TextSizeStep;
@@ -24,6 +22,7 @@ interface UseTextFitMeasurementOptions {
 export function useTextFitMeasurement({
   headlineZoneRef,
   excerptZoneRef,
+  formatKey,
   headline,
   excerpt,
   headlineSizeStep,
@@ -54,14 +53,21 @@ export function useTextFitMeasurement({
     const excerptZone = excerptZoneRef.current;
     if (!headlineZone || !excerptZone) return;
 
-    const headlinePreferred = preferredFontSize(headlineSizeStep, HEADLINE_TYPO);
-    const excerptPreferred = preferredFontSize(excerptSizeStep, EXCERPT_TYPO);
+    const layout = getStandardArticleLayout(formatKey);
+    const headlinePreferred = preferredFontSize(
+      headlineSizeStep,
+      layout.headlineTypo,
+    );
+    const excerptPreferred = preferredFontSize(
+      excerptSizeStep,
+      layout.excerptTypo,
+    );
 
     const headlineResult = measureTextFit({
       text: headline,
       preferredSize: headlinePreferred,
       autoFit: headlineAutoFit,
-      bounds: HEADLINE_TYPO,
+      bounds: layout.headlineTypo,
       zoneElement: headlineZone,
     });
 
@@ -69,7 +75,7 @@ export function useTextFitMeasurement({
       text: excerpt,
       preferredSize: excerptPreferred,
       autoFit: excerptAutoFit,
-      bounds: EXCERPT_TYPO,
+      bounds: layout.excerptTypo,
       zoneElement: excerptZone,
     });
 
@@ -81,6 +87,7 @@ export function useTextFitMeasurement({
     });
   }, [
     fontsReady,
+    formatKey,
     headline,
     excerpt,
     headlineSizeStep,

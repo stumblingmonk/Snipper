@@ -1,6 +1,5 @@
+import { getStandardArticleLayout } from '@/constants/standardArticleLayouts';
 import {
-  EXCERPT_TYPO,
-  HEADLINE_TYPO,
   fitStatusLabel,
   preferredFontSize,
   type FitStatus,
@@ -24,6 +23,8 @@ function statusClassName(status: FitStatus): string {
 }
 
 export function FitStatusIndicator({ field }: FitStatusIndicatorProps) {
+  const formatKey = useSnipperStore((s) => s.format);
+  const layout = getStandardArticleLayout(formatKey);
   const status = useSnipperStore((s) =>
     field === 'headline' ? s.headlineFitStatus : s.excerptFitStatus,
   );
@@ -38,7 +39,8 @@ export function FitStatusIndicator({ field }: FitStatusIndicatorProps) {
   const step = useSnipperStore((s) =>
     field === 'headline' ? s.headlineSizeStep : s.excerptSizeStep,
   );
-  const bounds = field === 'headline' ? HEADLINE_TYPO : EXCERPT_TYPO;
+  const bounds =
+    field === 'headline' ? layout.headlineTypo : layout.excerptTypo;
   const preferred = preferredFontSize(step, bounds);
 
   return (

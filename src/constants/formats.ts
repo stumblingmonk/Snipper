@@ -11,9 +11,35 @@ export interface FormatSpec {
 
 export const FORMATS: Record<FormatKey, FormatSpec> = {
   square: { key: 'square', label: 'Square', width: 1080, height: 1080 },
-  portrait: { key: 'portrait', label: 'Portrait', width: 1080, height: 1350 },
-  story: { key: 'story', label: 'Story', width: 1080, height: 1920 },
-  linkedin: { key: 'linkedin', label: 'LinkedIn', width: 1200, height: 627 },
+  portrait: {
+    key: 'portrait',
+    label: 'Portrait Feed',
+    width: 1080,
+    height: 1350,
+  },
+  story: {
+    key: 'story',
+    label: 'Story / Reel Cover',
+    width: 1080,
+    height: 1920,
+  },
+  linkedin: {
+    key: 'linkedin',
+    label: 'LinkedIn Landscape',
+    width: 1200,
+    height: 627,
+  },
 };
 
+export const FORMAT_LIST: FormatSpec[] = [
+  FORMATS.square,
+  FORMATS.portrait,
+  FORMATS.story,
+  FORMATS.linkedin,
+];
+
 export const STORY_FORMAT = FORMATS.story;
+
+export function getFormatExportFilename(formatKey: FormatKey): string {
+  return `snipper-${formatKey}-export.png`;
+}

@@ -1,12 +1,11 @@
-import {
-  EXCERPT_TYPO,
-  HEADLINE_TYPO,
-  preferredFontSize,
-} from '@/constants/textFit';
+import { getStandardArticleLayout } from '@/constants/standardArticleLayouts';
+import { preferredFontSize } from '@/constants/textFit';
 import { useSnipperStore } from '@/store/snipperStore';
 import styles from './TextFitControls.module.css';
 
 export function TextFitControls() {
+  const formatKey = useSnipperStore((s) => s.format);
+  const layout = getStandardArticleLayout(formatKey);
   const headlineSizeStep = useSnipperStore((s) => s.headlineSizeStep);
   const excerptSizeStep = useSnipperStore((s) => s.excerptSizeStep);
   const headlineAutoFit = useSnipperStore((s) => s.headlineAutoFit);
@@ -18,8 +17,14 @@ export function TextFitControls() {
   const setExcerptAutoFit = useSnipperStore((s) => s.setExcerptAutoFit);
   const resetTextControls = useSnipperStore((s) => s.resetTextControls);
 
-  const headlinePreferred = preferredFontSize(headlineSizeStep, HEADLINE_TYPO);
-  const excerptPreferred = preferredFontSize(excerptSizeStep, EXCERPT_TYPO);
+  const headlinePreferred = preferredFontSize(
+    headlineSizeStep,
+    layout.headlineTypo,
+  );
+  const excerptPreferred = preferredFontSize(
+    excerptSizeStep,
+    layout.excerptTypo,
+  );
 
   return (
     <section className={styles.section}>

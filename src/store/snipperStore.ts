@@ -15,6 +15,9 @@ import {
 } from '@/utils/articleImageUpload';
 import { createLogoObjectUrl } from '@/utils/logoUpload';
 import {
+  getStandardArticleLayout,
+} from '@/constants/standardArticleLayouts';
+import {
   EXCERPT_TYPO,
   HEADLINE_TYPO,
   preferredFontSize,
@@ -66,7 +69,6 @@ export interface SnipperState {
   excerptResolvedFontSize: number;
   selectedSourceLogoId: SourceLogoSelectionId;
   customLogoObjectUrl: string | null;
-  backgroundObjectUrl: string | null;
   articleImageObjectUrl: string | null;
   uploadedArticleImageObjectUrl: string | null;
   flattenedCropUrl: string | null;
@@ -93,6 +95,7 @@ export interface SnipperState {
   setHeadlineAutoFit: (enabled: boolean) => void;
   setExcerptAutoFit: (enabled: boolean) => void;
   resetTextControls: () => void;
+  setFormat: (format: FormatKey) => void;
   setFlattenedCropUrl: (url: string | null) => void;
   setExportStatus: (
     status: SnipperState['exportStatus'],
@@ -140,7 +143,6 @@ export const useSnipperStore = create<SnipperState>((set, get) => ({
   excerptResolvedFontSize: EXCERPT_TYPO.default,
   selectedSourceLogoId: DEFAULT_SOURCE_LOGO_ID,
   customLogoObjectUrl: null,
-  backgroundObjectUrl: DEFAULT_CONTENT.backgroundUrl,
   articleImageObjectUrl: DEFAULT_CONTENT.articleImageUrl,
   uploadedArticleImageObjectUrl: null,
   flattenedCropUrl: null,
@@ -183,17 +185,20 @@ export const useSnipperStore = create<SnipperState>((set, get) => ({
     })),
   setHeadlineAutoFit: (headlineAutoFit) => set({ headlineAutoFit }),
   setExcerptAutoFit: (excerptAutoFit) => set({ excerptAutoFit }),
-  resetTextControls: () =>
+  resetTextControls: () => {
+    const layout = getStandardArticleLayout(get().format);
     set({
       headlineSizeStep: 0,
       excerptSizeStep: 0,
       headlineAutoFit: true,
       excerptAutoFit: false,
-      headlineResolvedFontSize: preferredFontSize(0, HEADLINE_TYPO),
-      excerptResolvedFontSize: preferredFontSize(0, EXCERPT_TYPO),
+      headlineResolvedFontSize: preferredFontSize(0, layout.headlineTypo),
+      excerptResolvedFontSize: preferredFontSize(0, layout.excerptTypo),
       headlineFitStatus: 'fits',
       excerptFitStatus: 'fits',
-    }),
+    });
+  },
+  setFormat: (format) => set({ format }),
   setFlattenedCropUrl: (flattenedCropUrl) => {
     const previous = get().flattenedCropUrl;
     if (previous && previous !== flattenedCropUrl) {

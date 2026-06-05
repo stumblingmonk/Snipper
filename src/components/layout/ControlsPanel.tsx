@@ -1,4 +1,5 @@
 import { ImageModeControls } from '@/components/layout/ImageModeControls';
+import { FormatPicker } from '@/components/layout/FormatPicker';
 import { TextFitControls } from '@/components/layout/TextFitControls';
 import styles from './ControlsPanel.module.css';
 
@@ -7,6 +8,7 @@ interface ControlsPanelProps {
   exportStatus: 'idle' | 'exporting' | 'done' | 'error';
   exportError: string | null;
   lastExportSize: { width: number; height: number } | null;
+  backgroundFallbackNote: string | null;
 }
 
 export function ControlsPanel({
@@ -14,6 +16,7 @@ export function ControlsPanel({
   exportStatus,
   exportError,
   lastExportSize,
+  backgroundFallbackNote,
 }: ControlsPanelProps) {
   const isExporting = exportStatus === 'exporting';
 
@@ -26,10 +29,13 @@ export function ControlsPanel({
         <p className={styles.value}>Standard Article</p>
       </section>
 
-      <section className={styles.section}>
-        <h3 className={styles.label}>Format</h3>
-        <p className={styles.value}>Story — 1080 × 1920</p>
-      </section>
+      <FormatPicker />
+
+      {backgroundFallbackNote ? (
+        <p className={styles.note} role="status">
+          {backgroundFallbackNote}
+        </p>
+      ) : null}
 
       <ImageModeControls />
 

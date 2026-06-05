@@ -13,6 +13,7 @@ export function PreviewCardWithTextFit(props: PreviewCardWithTextFitProps) {
   const headlineZoneRef = useRef<HTMLDivElement>(null);
   const excerptZoneRef = useRef<HTMLDivElement>(null);
 
+  const formatKey = useSnipperStore((s) => s.format);
   const headline = useSnipperStore((s) => s.headline);
   const excerpt = useSnipperStore((s) => s.excerpt);
   const headlineSizeStep = useSnipperStore((s) => s.headlineSizeStep);
@@ -30,6 +31,7 @@ export function PreviewCardWithTextFit(props: PreviewCardWithTextFitProps) {
   useTextFitMeasurement({
     headlineZoneRef,
     excerptZoneRef,
+    formatKey,
     headline,
     excerpt,
     headlineSizeStep,

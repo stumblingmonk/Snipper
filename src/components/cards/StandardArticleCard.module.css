@@ -1,13 +1,13 @@
 .card {
   position: relative;
   overflow: hidden;
-  background-color: #111318;
+  background-color: var(--sa-fallback-bg, #111318);
   background-size: cover;
   background-position: center;
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
-  padding: 48px;
+  padding: var(--sa-card-padding, 48px);
 }
 
 .articleContainer {
@@ -27,19 +27,21 @@
   flex-direction: column;
   align-items: flex-start;
   gap: 16px;
-  padding: 48px 48px 20px;
+  padding: var(--sa-header-padding-top, 48px) var(--sa-zone-margin-x, 48px)
+    var(--sa-header-padding-bottom, 20px);
 }
 
 .logo {
   display: block;
-  width: 280px;
+  width: var(--sa-logo-max-width, 280px);
+  max-width: 100%;
   height: auto;
   object-fit: contain;
 }
 
 .sourceName {
   font-family: var(--font-body);
-  font-size: 24px;
+  font-size: var(--sa-source-name-size, 24px);
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -47,10 +49,11 @@
 }
 
 .headlineZone {
-  width: calc(100% - 96px);
-  height: 360px;
-  margin: 0 48px;
+  width: var(--sa-headline-zone-width);
+  height: var(--sa-headline-zone-height);
+  margin: 0 var(--sa-zone-margin-x, 48px);
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .headline {
@@ -67,15 +70,17 @@
 }
 
 .subheadZone {
-  width: calc(100% - 96px);
-  margin: 8px 48px 0;
+  width: var(--sa-headline-zone-width);
+  height: var(--sa-subhead-zone-height, 80px);
+  margin: var(--sa-subhead-margin-top, 8px) var(--sa-zone-margin-x, 48px) 0;
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .subhead {
   margin: 0;
   font-family: var(--font-body);
-  font-size: 30px;
+  font-size: var(--sa-subhead-font-size, 30px);
   font-weight: 500;
   line-height: 1.3;
   color: #3a4150;
@@ -84,11 +89,12 @@
 }
 
 .imageZone {
-  width: calc(100% - 96px);
-  height: 520px;
-  margin: 24px 48px 0;
+  width: var(--sa-image-frame-width);
+  height: var(--sa-image-frame-height);
+  margin: var(--sa-image-margin-top, 24px) var(--sa-zone-margin-x, 48px) 0;
   overflow: hidden;
   border-radius: 4px;
+  flex-shrink: 0;
 }
 
 .articleImage {
@@ -99,10 +105,11 @@
 }
 
 .excerptZone {
-  width: calc(100% - 96px);
-  height: 200px;
-  margin: 24px 48px 0;
+  width: var(--sa-excerpt-zone-width);
+  height: var(--sa-excerpt-zone-height);
+  margin: var(--sa-excerpt-margin-top, 24px) var(--sa-zone-margin-x, 48px) 0;
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .excerpt {
@@ -118,12 +125,14 @@
 
 .footer {
   margin-top: auto;
-  padding: 24px 48px 40px;
+  padding: var(--sa-footer-padding-top, 24px) var(--sa-zone-margin-x, 48px)
+    var(--sa-footer-padding-bottom, 40px);
+  flex-shrink: 0;
 }
 
 .footerSource {
   font-family: var(--font-body);
-  font-size: 20px;
+  font-size: var(--sa-footer-font-size, 20px);
   font-weight: 500;
   letter-spacing: 0.06em;
   text-transform: uppercase;

@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { FORMATS } from '@/constants/formats';
-import { STORY_ARTICLE_IMAGE_FRAME } from '@/constants/imageSettings';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { FORMATS, getFormatExportFilename } from '@/constants/formats';
+import { getStandardArticleLayout } from '@/constants/standardArticleLayouts';
 import { exportCardPng } from '@/utils/exportCard';
 import { flattenImage } from '@/utils/flattenImage';
-import { resolveSourceLogoUrl } from '@/store/selectors';
+import { resolveFormatBackground, resolveSourceLogoUrl } from '@/store/selectors';
 import { useSnipperStore } from '@/store/snipperStore';
 import { PreviewCardWithTextFit } from '@/components/cards/PreviewCardWithTextFit';
 import { StandardArticleCard } from '@/components/cards/StandardArticleCard';
@@ -12,14 +12,22 @@ import { ContentWorkspace } from '@/components/layout/ContentWorkspace';
 import { PreviewPanel } from '@/components/layout/PreviewPanel';
 import styles from './App.module.css';
 
-const STORY = FORMATS.story;
-
 export default function App() {
   const exportRef = useRef<HTMLDivElement>(null);
   const [previewScale, setPreviewScale] = useState(0.35);
 
+  const formatKey = useSnipperStore((s) => s.format);
+  const format = FORMATS[formatKey];
+  const layout = useMemo(
+    () => getStandardArticleLayout(formatKey),
+    [formatKey],
+  );
+  const background = useMemo(
+    () => resolveFormatBackground(formatKey),
+    [formatKey],
+  );
+
   const logoUrl = useSnipperStore(resolveSourceLogoUrl);
-  const backgroundObjectUrl = useSnipperStore((s) => s.backgroundObjectUrl);
   const articleImageObjectUrl = useSnipperStore((s) => s.articleImageObjectUrl);
   const flattenedCropUrl = useSnipperStore((s) => s.flattenedCropUrl);
   const imageMode = useSnipperStore((s) => s.imageMode);
@@ -49,11 +57,12 @@ export default function App() {
     }
 
     let cancelled = false;
+    const { width, height } = layout.imageFrame;
 
     flattenImage({
       sourceUrl: articleImageObjectUrl,
-      outputWidth: STORY_ARTICLE_IMAGE_FRAME.width,
-      outputHeight: STORY_ARTICLE_IMAGE_FRAME.height,
+      outputWidth: width,
+      outputHeight: height,
       mode: imageMode,
       crop: { zoom: cropZoom, offsetX: cropOffsetX, offsetY: cropOffsetY },
     })
@@ -77,6 +86,7 @@ export default function App() {
     cropZoom,
     cropOffsetX,
     cropOffsetY,
+    layout.imageFrame,
     setFlattenedCropUrl,
   ]);
 
@@ -91,25 +101,27 @@ export default function App() {
     try {
       const size = await exportCardPng({
         node,
-        width: STORY.width,
-        height: STORY.height,
-        filename: 'snipper-story-export.png',
+        width: format.width,
+        height: format.height,
+        filename: getFormatExportFilename(formatKey),
       });
       setExportStatus('done', null, size);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Export failed';
       setExportStatus('error', message);
     }
-  }, [setExportStatus]);
+  }, [format.width, format.height, formatKey, setExportStatus]);
 
   const sharedCardProps = {
-    format: STORY,
+    format,
+    layout,
     sourceName,
     headline,
     subhead,
     excerpt,
     logoUrl,
-    backgroundUrl: backgroundObjectUrl,
+    backgroundUrl: background.url,
+    backgroundFallbackColor: background.fallbackColor,
     imageUrl: cardImageUrl,
     showImage: imageMode !== 'none' && Boolean(cardImageUrl),
   };
@@ -118,7 +130,9 @@ export default function App() {
     <div className={styles.app}>
       <header className={styles.topBar}>
         <h1 className={styles.appTitle}>SNIPPER</h1>
-        <span className={styles.phaseBadge}>Phase 5 — Text Fit System</span>
+        <span className={styles.phaseBadge}>
+          Phase 6 — Standard Article Formats
+        </span>
       </header>
 
       <div className={styles.columns}>
@@ -127,6 +141,7 @@ export default function App() {
           exportStatus={exportStatus}
           exportError={exportError}
           lastExportSize={lastExportSize}
+          backgroundFallbackNote={background.fallbackNote}
         />
 
         <ContentWorkspace />
@@ -134,13 +149,17 @@ export default function App() {
         <PreviewPanel
           scale={previewScale}
           onScaleChange={setPreviewScale}
-          format={STORY}
+          format={format}
         >
           <PreviewCardWithTextFit {...sharedCardProps} />
         </PreviewPanel>
       </div>
 
-      <div className={styles.exportHost} aria-hidden="true">
+      <div
+        className={styles.exportHost}
+        style={{ width: format.width, height: format.height }}
+        aria-hidden="true"
+      >
         <div ref={exportRef}>
           <StandardArticleCard
             id="export-artboard"
