@@ -1,0 +1,47 @@
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.topBar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-panel);
+}
+
+.appTitle {
+  margin: 0;
+  font-family: var(--font-headline);
+  font-size: 28px;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+}
+
+.phaseBadge {
+  font-size: 13px;
+  color: var(--color-muted);
+  padding: 4px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+}
+
+.columns {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 280px minmax(320px, 1fr) minmax(420px, 1.2fr);
+  min-height: 0;
+}
+
+.exportHost {
+  position: fixed;
+  left: -12000px;
+  top: 0;
+  width: 1080px;
+  height: 1920px;
+  overflow: hidden;
+  pointer-events: none;
+}

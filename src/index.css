@@ -1,0 +1,42 @@
+:root {
+  --font-headline: 'Special Gothic Expanded One', sans-serif;
+  --font-body: 'IBM Plex Sans', sans-serif;
+
+  --color-bg: #0f1117;
+  --color-panel: #1a1d27;
+  --color-border: #2a2f3d;
+  --color-text: #e8eaef;
+  --color-muted: #8b92a5;
+  --color-accent: #ff1817;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100vh;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--color-bg);
+  color: var(--color-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
