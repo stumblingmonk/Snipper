@@ -15,6 +15,11 @@ import {
 } from '@/utils/articleImageUpload';
 import { createLogoObjectUrl } from '@/utils/logoUpload';
 import {
+  DEFAULT_ARTICLE_IMAGE,
+  PROVIDED_DEFAULT_COPY,
+} from '@/constants/providedAssets';
+import {
+  DEFAULT_FORMAT_BACKGROUND,
   getStandardArticleLayout,
 } from '@/constants/standardArticleLayouts';
 import {
@@ -26,20 +31,11 @@ import {
   type TextSizeStep,
 } from '@/constants/textFit';
 
-/** Default content seeded from Phase 1 stress test for continuity. */
+/** Default content seeded from SNIPPER handoff copy and assets. */
 export const DEFAULT_CONTENT = {
-  sourceUrl:
-    'https://www.hollywoodreporter.com/tv/tv-news/2026-espys-host-marcello-hernandez-1236612262/',
-  sourceName: 'The Hollywood Reporter',
-  headline:
-    '‘Saturday Night Live’ Star Marcello Hernández Will Host the 2026 ESPYs as the Awards Return to New York City https://www.hollywoodreporter.com/tv/tv-news/2026-espys-host-marcello-hernandez-1236612262/',
-  subhead: '',
-  excerpt:
-    'Marcello Hernández will host the 2026 ESPYs as the awards return to New York City. The ceremony will air July 15 on ABC.',
-  scratchpad: '',
-  caption: '',
-  backgroundUrl: '/assets/stress/background.jpg',
-  articleImageUrl: '/assets/stress/article-subject.png',
+  ...PROVIDED_DEFAULT_COPY,
+  backgroundUrl: DEFAULT_FORMAT_BACKGROUND,
+  articleImageUrl: DEFAULT_ARTICLE_IMAGE,
 } as const;
 
 export interface ScratchpadSelection {

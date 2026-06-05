@@ -26,10 +26,10 @@ export const EXCERPT_TYPO: TypographyBounds = {
   stepPx: 2,
 };
 
-/** Story Standard Article fixed text zones at full artboard scale. */
+/** Story Standard Article fixed headline zone at full artboard scale. Excerpt height is computed. */
 export const STORY_TEXT_ZONES = {
-  headline: { width: 888, height: 360 },
-  excerpt: { width: 888, height: 200 },
+  headline: { width: 888, height: 300 },
+  excerpt: { width: 888, height: 0 },
 } as const;
 
 export const TEXT_SIZE_STEPS: TextSizeStep[] = [-2, -1, 0, 1, 2];

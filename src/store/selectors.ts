@@ -22,7 +22,7 @@ export function resolveSourceLogoUrl(state: SnipperState): string | null {
 }
 
 export interface ResolvedFormatBackground {
-  url: string | null;
+  url: string;
   fallbackColor: string;
   usingFallback: boolean;
   fallbackNote: string | null;
@@ -32,21 +32,11 @@ export function resolveFormatBackground(
   formatKey: FormatKey,
 ): ResolvedFormatBackground {
   const layout = getStandardArticleLayout(formatKey);
-  const preferred = layout.backgroundAsset;
-
-  if (!preferred || preferred === DEFAULT_FORMAT_BACKGROUND) {
-    return {
-      url: DEFAULT_FORMAT_BACKGROUND,
-      fallbackColor: layout.fallbackBackgroundColor,
-      usingFallback: false,
-      fallbackNote: null,
-    };
-  }
 
   return {
-    url: DEFAULT_FORMAT_BACKGROUND,
+    url: layout.backgroundAsset ?? DEFAULT_FORMAT_BACKGROUND,
     fallbackColor: layout.fallbackBackgroundColor,
-    usingFallback: true,
-    fallbackNote: `Format-specific background not available for ${layout.formatKey}; using default branded background.`,
+    usingFallback: false,
+    fallbackNote: null,
   };
 }

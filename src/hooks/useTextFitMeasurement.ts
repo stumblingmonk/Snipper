@@ -4,6 +4,7 @@ import type { TextSizeStep } from '@/constants/textFit';
 import { preferredFontSize } from '@/constants/textFit';
 import { getStandardArticleLayout } from '@/constants/standardArticleLayouts';
 import { measureTextFit } from '@/utils/textFitMeasure';
+import { resolveSourceLogoUrl } from '@/store/selectors';
 import { useSnipperStore } from '@/store/snipperStore';
 
 interface UseTextFitMeasurementOptions {
@@ -11,6 +12,7 @@ interface UseTextFitMeasurementOptions {
   excerptZoneRef: React.RefObject<HTMLDivElement | null>;
   formatKey: FormatKey;
   headline: string;
+  subhead: string;
   excerpt: string;
   headlineSizeStep: TextSizeStep;
   excerptSizeStep: TextSizeStep;
@@ -24,6 +26,7 @@ export function useTextFitMeasurement({
   excerptZoneRef,
   formatKey,
   headline,
+  subhead,
   excerpt,
   headlineSizeStep,
   excerptSizeStep,
@@ -32,6 +35,9 @@ export function useTextFitMeasurement({
   imageMode,
 }: UseTextFitMeasurementOptions): boolean {
   const setTextFitResult = useSnipperStore((s) => s.setTextFitResult);
+  const logoUrl = useSnipperStore(resolveSourceLogoUrl);
+  const sourceName = useSnipperStore((s) => s.sourceName);
+  const hasLogo = Boolean(logoUrl);
   const [fontsReady, setFontsReady] = useState(
     () => typeof document !== 'undefined' && document.fonts.status === 'loaded',
   );
@@ -54,6 +60,7 @@ export function useTextFitMeasurement({
     if (!headlineZone || !excerptZone) return;
 
     const layout = getStandardArticleLayout(formatKey);
+
     const headlinePreferred = preferredFontSize(
       headlineSizeStep,
       layout.headlineTypo,
@@ -89,12 +96,15 @@ export function useTextFitMeasurement({
     fontsReady,
     formatKey,
     headline,
+    subhead,
     excerpt,
     headlineSizeStep,
     excerptSizeStep,
     headlineAutoFit,
     excerptAutoFit,
     imageMode,
+    hasLogo,
+    sourceName,
     headlineZoneRef,
     excerptZoneRef,
     setTextFitResult,

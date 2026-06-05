@@ -15,6 +15,7 @@ export function PreviewCardWithTextFit(props: PreviewCardWithTextFitProps) {
 
   const formatKey = useSnipperStore((s) => s.format);
   const headline = useSnipperStore((s) => s.headline);
+  const subhead = useSnipperStore((s) => s.subhead);
   const excerpt = useSnipperStore((s) => s.excerpt);
   const headlineSizeStep = useSnipperStore((s) => s.headlineSizeStep);
   const excerptSizeStep = useSnipperStore((s) => s.excerptSizeStep);
@@ -33,6 +34,7 @@ export function PreviewCardWithTextFit(props: PreviewCardWithTextFitProps) {
     excerptZoneRef,
     formatKey,
     headline,
+    subhead,
     excerpt,
     headlineSizeStep,
     excerptSizeStep,

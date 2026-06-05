@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { FORMATS, getFormatExportFilename } from '@/constants/formats';
-import { getStandardArticleLayout } from '@/constants/standardArticleLayouts';
+import { computeArticleZones, getStandardArticleLayout } from '@/constants/standardArticleLayouts';
 import { exportCardPng } from '@/utils/exportCard';
 import { flattenImage } from '@/utils/flattenImage';
 import { resolveFormatBackground, resolveSourceLogoUrl } from '@/store/selectors';
@@ -14,7 +14,6 @@ import styles from './App.module.css';
 
 export default function App() {
   const exportRef = useRef<HTMLDivElement>(null);
-  const [previewScale, setPreviewScale] = useState(0.35);
 
   const formatKey = useSnipperStore((s) => s.format);
   const format = FORMATS[formatKey];
@@ -50,6 +49,20 @@ export default function App() {
   const setFlattenedCropUrl = useSnipperStore((s) => s.setFlattenedCropUrl);
   const setExportStatus = useSnipperStore((s) => s.setExportStatus);
 
+  const showImage = imageMode !== 'none';
+  const computedImageFrame = useMemo(
+    () =>
+      computeArticleZones({
+        layout,
+        format,
+        showImage,
+        hasSubhead: Boolean(subhead.trim()),
+        hasLogo: Boolean(logoUrl),
+        hasFooter: Boolean(sourceName),
+      }).imageFrame,
+    [layout, format, showImage, subhead, logoUrl, sourceName],
+  );
+
   useEffect(() => {
     if (!articleImageObjectUrl || imageMode === 'none') {
       setFlattenedCropUrl(null);
@@ -57,7 +70,7 @@ export default function App() {
     }
 
     let cancelled = false;
-    const { width, height } = layout.imageFrame;
+    const { width, height } = computedImageFrame;
 
     flattenImage({
       sourceUrl: articleImageObjectUrl,
@@ -86,7 +99,7 @@ export default function App() {
     cropZoom,
     cropOffsetX,
     cropOffsetY,
-    layout.imageFrame,
+    computedImageFrame,
     setFlattenedCropUrl,
   ]);
 
@@ -131,7 +144,7 @@ export default function App() {
       <header className={styles.topBar}>
         <h1 className={styles.appTitle}>SNIPPER</h1>
         <span className={styles.phaseBadge}>
-          Phase 6 — Standard Article Formats
+          Phase 7 — First Usable Build
         </span>
       </header>
 
@@ -146,11 +159,7 @@ export default function App() {
 
         <ContentWorkspace />
 
-        <PreviewPanel
-          scale={previewScale}
-          onScaleChange={setPreviewScale}
-          format={format}
-        >
+        <PreviewPanel format={format}>
           <PreviewCardWithTextFit {...sharedCardProps} />
         </PreviewPanel>
       </div>
