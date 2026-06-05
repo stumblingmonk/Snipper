@@ -1,4 +1,5 @@
 import { ImageModeControls } from '@/components/layout/ImageModeControls';
+import { TextFitControls } from '@/components/layout/TextFitControls';
 import styles from './ControlsPanel.module.css';
 
 interface ControlsPanelProps {
@@ -31,6 +32,8 @@ export function ControlsPanel({
       </section>
 
       <ImageModeControls />
+
+      <TextFitControls />
 
       <section className={styles.section}>
         <h3 className={styles.label}>Export</h3>

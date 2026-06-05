@@ -1,0 +1,25 @@
+.normal {
+  color: var(--color-muted);
+}
+
+.tight {
+  color: #e6c14a;
+}
+
+.tooLong {
+  color: #ff8a80;
+}
+
+.indicator {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.meta {
+  font-size: 11px;
+  opacity: 0.9;
+}

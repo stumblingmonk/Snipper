@@ -1,0 +1,52 @@
+import { useRef } from 'react';
+import type { StandardArticleCardProps } from '@/components/cards/StandardArticleCard';
+import { StandardArticleCard } from '@/components/cards/StandardArticleCard';
+import { useTextFitMeasurement } from '@/hooks/useTextFitMeasurement';
+import { useSnipperStore } from '@/store/snipperStore';
+
+type PreviewCardWithTextFitProps = Omit<
+  StandardArticleCardProps,
+  'headlineFontSize' | 'excerptFontSize'
+>;
+
+export function PreviewCardWithTextFit(props: PreviewCardWithTextFitProps) {
+  const headlineZoneRef = useRef<HTMLDivElement>(null);
+  const excerptZoneRef = useRef<HTMLDivElement>(null);
+
+  const headline = useSnipperStore((s) => s.headline);
+  const excerpt = useSnipperStore((s) => s.excerpt);
+  const headlineSizeStep = useSnipperStore((s) => s.headlineSizeStep);
+  const excerptSizeStep = useSnipperStore((s) => s.excerptSizeStep);
+  const headlineAutoFit = useSnipperStore((s) => s.headlineAutoFit);
+  const excerptAutoFit = useSnipperStore((s) => s.excerptAutoFit);
+  const imageMode = useSnipperStore((s) => s.imageMode);
+  const headlineResolvedFontSize = useSnipperStore(
+    (s) => s.headlineResolvedFontSize,
+  );
+  const excerptResolvedFontSize = useSnipperStore(
+    (s) => s.excerptResolvedFontSize,
+  );
+
+  useTextFitMeasurement({
+    headlineZoneRef,
+    excerptZoneRef,
+    headline,
+    excerpt,
+    headlineSizeStep,
+    excerptSizeStep,
+    headlineAutoFit,
+    excerptAutoFit,
+    imageMode,
+  });
+
+  return (
+    <StandardArticleCard
+      {...props}
+      id="preview-artboard"
+      headlineZoneRef={headlineZoneRef}
+      excerptZoneRef={excerptZoneRef}
+      headlineFontSize={headlineResolvedFontSize}
+      excerptFontSize={excerptResolvedFontSize}
+    />
+  );
+}

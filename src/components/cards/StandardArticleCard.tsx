@@ -1,3 +1,4 @@
+import type { RefObject } from 'react';
 import type { FormatSpec } from '@/constants/formats';
 import styles from './StandardArticleCard.module.css';
 
@@ -15,6 +16,8 @@ export interface StandardArticleCardProps {
   showImage: boolean;
   className?: string;
   id?: string;
+  headlineZoneRef?: RefObject<HTMLDivElement | null>;
+  excerptZoneRef?: RefObject<HTMLDivElement | null>;
 }
 
 export function StandardArticleCard({
@@ -31,6 +34,8 @@ export function StandardArticleCard({
   showImage,
   className,
   id,
+  headlineZoneRef,
+  excerptZoneRef,
 }: StandardArticleCardProps) {
   return (
     <article
@@ -59,7 +64,9 @@ export function StandardArticleCard({
         </header>
 
         <div
+          ref={headlineZoneRef}
           className={styles.headlineZone}
+          data-fit-zone="headline"
           style={{ fontSize: headlineFontSize }}
         >
           <h1 className={styles.headline}>{headline}</h1>
@@ -83,7 +90,9 @@ export function StandardArticleCard({
         ) : null}
 
         <div
+          ref={excerptZoneRef}
           className={styles.excerptZone}
+          data-fit-zone="excerpt"
           style={{ fontSize: excerptFontSize }}
         >
           <p className={styles.excerpt}>{excerpt}</p>

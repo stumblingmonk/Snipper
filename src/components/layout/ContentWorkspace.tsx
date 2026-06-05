@@ -1,4 +1,5 @@
 import { useCallback, useRef } from 'react';
+import { FitStatusIndicator } from '@/components/layout/FitStatusIndicator';
 import { ArticleImageUpload } from '@/components/layout/ArticleImageUpload';
 import { SourceLogoPicker } from '@/components/layout/SourceLogoPicker';
 import {
@@ -119,6 +120,7 @@ export function ContentWorkspace() {
           rows={4}
           placeholder="Headline for the card"
         />
+        <FitStatusIndicator field="headline" />
       </section>
 
       <section className={styles.section}>
@@ -147,6 +149,7 @@ export function ContentWorkspace() {
           rows={4}
           placeholder="Excerpt shown on the card"
         />
+        <FitStatusIndicator field="excerpt" />
       </section>
 
       <section className={styles.section}>

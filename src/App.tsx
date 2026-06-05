@@ -4,9 +4,8 @@ import { STORY_ARTICLE_IMAGE_FRAME } from '@/constants/imageSettings';
 import { exportCardPng } from '@/utils/exportCard';
 import { flattenImage } from '@/utils/flattenImage';
 import { resolveSourceLogoUrl } from '@/store/selectors';
-import {
-  useSnipperStore,
-} from '@/store/snipperStore';
+import { useSnipperStore } from '@/store/snipperStore';
+import { PreviewCardWithTextFit } from '@/components/cards/PreviewCardWithTextFit';
 import { StandardArticleCard } from '@/components/cards/StandardArticleCard';
 import { ControlsPanel } from '@/components/layout/ControlsPanel';
 import { ContentWorkspace } from '@/components/layout/ContentWorkspace';
@@ -19,8 +18,6 @@ export default function App() {
   const exportRef = useRef<HTMLDivElement>(null);
   const [previewScale, setPreviewScale] = useState(0.35);
 
-  const headlineFontSize = useSnipperStore((s) => s.headlineFontSize);
-  const excerptFontSize = useSnipperStore((s) => s.excerptFontSize);
   const logoUrl = useSnipperStore(resolveSourceLogoUrl);
   const backgroundObjectUrl = useSnipperStore((s) => s.backgroundObjectUrl);
   const articleImageObjectUrl = useSnipperStore((s) => s.articleImageObjectUrl);
@@ -36,6 +33,12 @@ export default function App() {
   const headline = useSnipperStore((s) => s.headline);
   const subhead = useSnipperStore((s) => s.subhead);
   const excerpt = useSnipperStore((s) => s.excerpt);
+  const headlineResolvedFontSize = useSnipperStore(
+    (s) => s.headlineResolvedFontSize,
+  );
+  const excerptResolvedFontSize = useSnipperStore(
+    (s) => s.excerptResolvedFontSize,
+  );
   const setFlattenedCropUrl = useSnipperStore((s) => s.setFlattenedCropUrl);
   const setExportStatus = useSnipperStore((s) => s.setExportStatus);
 
@@ -99,7 +102,7 @@ export default function App() {
     }
   }, [setExportStatus]);
 
-  const cardProps = {
+  const sharedCardProps = {
     format: STORY,
     sourceName,
     headline,
@@ -108,8 +111,6 @@ export default function App() {
     logoUrl,
     backgroundUrl: backgroundObjectUrl,
     imageUrl: cardImageUrl,
-    headlineFontSize,
-    excerptFontSize,
     showImage: imageMode !== 'none' && Boolean(cardImageUrl),
   };
 
@@ -117,9 +118,7 @@ export default function App() {
     <div className={styles.app}>
       <header className={styles.topBar}>
         <h1 className={styles.appTitle}>SNIPPER</h1>
-        <span className={styles.phaseBadge}>
-          Phase 4 — Image Upload & Modes
-        </span>
+        <span className={styles.phaseBadge}>Phase 5 — Text Fit System</span>
       </header>
 
       <div className={styles.columns}>
@@ -137,13 +136,18 @@ export default function App() {
           onScaleChange={setPreviewScale}
           format={STORY}
         >
-          <StandardArticleCard {...cardProps} />
+          <PreviewCardWithTextFit {...sharedCardProps} />
         </PreviewPanel>
       </div>
 
       <div className={styles.exportHost} aria-hidden="true">
         <div ref={exportRef}>
-          <StandardArticleCard id="export-artboard" {...cardProps} />
+          <StandardArticleCard
+            id="export-artboard"
+            {...sharedCardProps}
+            headlineFontSize={headlineResolvedFontSize}
+            excerptFontSize={excerptResolvedFontSize}
+          />
         </div>
       </div>
     </div>

@@ -14,6 +14,14 @@ import {
   isRevokableObjectUrl,
 } from '@/utils/articleImageUpload';
 import { createLogoObjectUrl } from '@/utils/logoUpload';
+import {
+  EXCERPT_TYPO,
+  HEADLINE_TYPO,
+  preferredFontSize,
+  clampTextSizeStep,
+  type FitStatus,
+  type TextSizeStep,
+} from '@/constants/textFit';
 
 /** Default content seeded from Phase 1 stress test for continuity. */
 export const DEFAULT_CONTENT = {
@@ -39,10 +47,23 @@ export interface ScratchpadSelection {
 
 const EMPTY_SELECTION: ScratchpadSelection = { start: 0, end: 0, text: '' };
 
+export interface TextFitResult {
+  headlineResolvedFontSize: number;
+  headlineFitStatus: FitStatus;
+  excerptResolvedFontSize: number;
+  excerptFitStatus: FitStatus;
+}
+
 export interface SnipperState {
   format: FormatKey;
-  headlineFontSize: number;
-  excerptFontSize: number;
+  headlineSizeStep: TextSizeStep;
+  excerptSizeStep: TextSizeStep;
+  headlineAutoFit: boolean;
+  excerptAutoFit: boolean;
+  headlineFitStatus: FitStatus;
+  excerptFitStatus: FitStatus;
+  headlineResolvedFontSize: number;
+  excerptResolvedFontSize: number;
   selectedSourceLogoId: SourceLogoSelectionId;
   customLogoObjectUrl: string | null;
   backgroundObjectUrl: string | null;
@@ -66,8 +87,12 @@ export interface SnipperState {
   caption: string;
   logoUploadError: string | null;
   articleImageUploadError: string | null;
-  setHeadlineFontSize: (size: number) => void;
-  setExcerptFontSize: (size: number) => void;
+  setTextFitResult: (result: TextFitResult) => void;
+  adjustHeadlineSizeStep: (delta: number) => void;
+  adjustExcerptSizeStep: (delta: number) => void;
+  setHeadlineAutoFit: (enabled: boolean) => void;
+  setExcerptAutoFit: (enabled: boolean) => void;
+  resetTextControls: () => void;
   setFlattenedCropUrl: (url: string | null) => void;
   setExportStatus: (
     status: SnipperState['exportStatus'],
@@ -105,8 +130,14 @@ function revokeIfBlob(url: string | null): void {
 
 export const useSnipperStore = create<SnipperState>((set, get) => ({
   format: 'story',
-  headlineFontSize: 72,
-  excerptFontSize: 36,
+  headlineSizeStep: 0,
+  excerptSizeStep: 0,
+  headlineAutoFit: true,
+  excerptAutoFit: false,
+  headlineFitStatus: 'fits',
+  excerptFitStatus: 'fits',
+  headlineResolvedFontSize: HEADLINE_TYPO.default,
+  excerptResolvedFontSize: EXCERPT_TYPO.default,
   selectedSourceLogoId: DEFAULT_SOURCE_LOGO_ID,
   customLogoObjectUrl: null,
   backgroundObjectUrl: DEFAULT_CONTENT.backgroundUrl,
@@ -130,8 +161,39 @@ export const useSnipperStore = create<SnipperState>((set, get) => ({
   caption: DEFAULT_CONTENT.caption,
   logoUploadError: null,
   articleImageUploadError: null,
-  setHeadlineFontSize: (headlineFontSize) => set({ headlineFontSize }),
-  setExcerptFontSize: (excerptFontSize) => set({ excerptFontSize }),
+  setTextFitResult: (result) => {
+    const state = get();
+    if (
+      state.headlineResolvedFontSize === result.headlineResolvedFontSize &&
+      state.headlineFitStatus === result.headlineFitStatus &&
+      state.excerptResolvedFontSize === result.excerptResolvedFontSize &&
+      state.excerptFitStatus === result.excerptFitStatus
+    ) {
+      return;
+    }
+    set(result);
+  },
+  adjustHeadlineSizeStep: (delta) =>
+    set((state) => ({
+      headlineSizeStep: clampTextSizeStep(state.headlineSizeStep + delta),
+    })),
+  adjustExcerptSizeStep: (delta) =>
+    set((state) => ({
+      excerptSizeStep: clampTextSizeStep(state.excerptSizeStep + delta),
+    })),
+  setHeadlineAutoFit: (headlineAutoFit) => set({ headlineAutoFit }),
+  setExcerptAutoFit: (excerptAutoFit) => set({ excerptAutoFit }),
+  resetTextControls: () =>
+    set({
+      headlineSizeStep: 0,
+      excerptSizeStep: 0,
+      headlineAutoFit: true,
+      excerptAutoFit: false,
+      headlineResolvedFontSize: preferredFontSize(0, HEADLINE_TYPO),
+      excerptResolvedFontSize: preferredFontSize(0, EXCERPT_TYPO),
+      headlineFitStatus: 'fits',
+      excerptFitStatus: 'fits',
+    }),
   setFlattenedCropUrl: (flattenedCropUrl) => {
     const previous = get().flattenedCropUrl;
     if (previous && previous !== flattenedCropUrl) {
