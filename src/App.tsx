@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { FORMATS } from '@/constants/formats';
 import { exportCardPng } from '@/utils/exportCard';
 import { flattenImage } from '@/utils/flattenImage';
+import { resolveSourceLogoUrl } from '@/store/selectors';
 import { useSnipperStore } from '@/store/snipperStore';
 import { StandardArticleCard } from '@/components/cards/StandardArticleCard';
 import { ControlsPanel } from '@/components/layout/ControlsPanel';
@@ -18,7 +19,7 @@ export default function App() {
 
   const headlineFontSize = useSnipperStore((s) => s.headlineFontSize);
   const excerptFontSize = useSnipperStore((s) => s.excerptFontSize);
-  const logoObjectUrl = useSnipperStore((s) => s.logoObjectUrl);
+  const logoUrl = useSnipperStore(resolveSourceLogoUrl);
   const backgroundObjectUrl = useSnipperStore((s) => s.backgroundObjectUrl);
   const articleImageObjectUrl = useSnipperStore((s) => s.articleImageObjectUrl);
   const flattenedCropUrl = useSnipperStore((s) => s.flattenedCropUrl);
@@ -96,7 +97,7 @@ export default function App() {
     headline,
     subhead,
     excerpt,
-    logoUrl: logoObjectUrl,
+    logoUrl,
     backgroundUrl: backgroundObjectUrl,
     imageUrl: cardImageUrl,
     headlineFontSize,
@@ -108,7 +109,7 @@ export default function App() {
     <div className={styles.app}>
       <header className={styles.topBar}>
         <h1 className={styles.appTitle}>SNIPPER</h1>
-        <span className={styles.phaseBadge}>Phase 2 — Manual Content Workspace</span>
+        <span className={styles.phaseBadge}>Phase 3 — Source Logo Picker</span>
       </header>
 
       <div className={styles.columns}>

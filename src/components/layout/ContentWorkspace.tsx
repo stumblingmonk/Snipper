@@ -1,4 +1,5 @@
 import { useCallback, useRef } from 'react';
+import { SourceLogoPicker } from '@/components/layout/SourceLogoPicker';
 import {
   selectHasScratchpadSelection,
   useSnipperStore,
@@ -100,6 +101,8 @@ export function ContentWorkspace() {
           placeholder="Publication name"
         />
       </section>
+
+      <SourceLogoPicker />
 
       <section className={styles.section}>
         <label className={styles.fieldLabel} htmlFor="headline">

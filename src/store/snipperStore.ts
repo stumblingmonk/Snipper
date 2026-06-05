@@ -1,6 +1,11 @@
 import { create } from 'zustand';
 import type { FormatKey, ImageMode } from '@/constants/formats';
+import {
+  DEFAULT_SOURCE_LOGO_ID,
+  type SourceLogoSelectionId,
+} from '@/constants/sourceLogos';
 import { appendWithSpacing } from '@/utils/appendText';
+import { createLogoObjectUrl } from '@/utils/logoUpload';
 
 /** Default content seeded from Phase 1 stress test for continuity. */
 export const DEFAULT_CONTENT = {
@@ -14,7 +19,6 @@ export const DEFAULT_CONTENT = {
     'Marcello Hernández will host the 2026 ESPYs as the awards return to New York City. The ceremony will air July 15 on ABC.',
   scratchpad: '',
   caption: '',
-  logoUrl: '/assets/logos/the-hollywood-reporter.svg',
   backgroundUrl: '/assets/stress/background.jpg',
   articleImageUrl: '/assets/stress/article-subject.png',
 } as const;
@@ -27,11 +31,12 @@ export interface ScratchpadSelection {
 
 const EMPTY_SELECTION: ScratchpadSelection = { start: 0, end: 0, text: '' };
 
-interface SnipperState {
+export interface SnipperState {
   format: FormatKey;
   headlineFontSize: number;
   excerptFontSize: number;
-  logoObjectUrl: string | null;
+  selectedSourceLogoId: SourceLogoSelectionId;
+  customLogoObjectUrl: string | null;
   backgroundObjectUrl: string | null;
   articleImageObjectUrl: string | null;
   flattenedCropUrl: string | null;
@@ -47,6 +52,7 @@ interface SnipperState {
   scratchpad: string;
   scratchpadSelection: ScratchpadSelection;
   caption: string;
+  logoUploadError: string | null;
   setHeadlineFontSize: (size: number) => void;
   setExcerptFontSize: (size: number) => void;
   setFlattenedCropUrl: (url: string | null) => void;
@@ -63,6 +69,9 @@ interface SnipperState {
   setScratchpad: (scratchpad: string) => void;
   setScratchpadSelection: (selection: ScratchpadSelection) => void;
   setCaption: (caption: string) => void;
+  setSelectedSourceLogoId: (id: SourceLogoSelectionId) => void;
+  uploadCustomLogo: (file: File) => void;
+  clearCustomLogo: () => void;
   useSelectedAsExcerpt: () => void;
   appendSelectedToExcerpt: () => void;
   clearScratchpad: () => void;
@@ -72,7 +81,8 @@ export const useSnipperStore = create<SnipperState>((set, get) => ({
   format: 'story',
   headlineFontSize: 72,
   excerptFontSize: 36,
-  logoObjectUrl: DEFAULT_CONTENT.logoUrl,
+  selectedSourceLogoId: DEFAULT_SOURCE_LOGO_ID,
+  customLogoObjectUrl: null,
   backgroundObjectUrl: DEFAULT_CONTENT.backgroundUrl,
   articleImageObjectUrl: DEFAULT_CONTENT.articleImageUrl,
   flattenedCropUrl: null,
@@ -88,6 +98,7 @@ export const useSnipperStore = create<SnipperState>((set, get) => ({
   scratchpad: DEFAULT_CONTENT.scratchpad,
   scratchpadSelection: EMPTY_SELECTION,
   caption: DEFAULT_CONTENT.caption,
+  logoUploadError: null,
   setHeadlineFontSize: (headlineFontSize) => set({ headlineFontSize }),
   setExcerptFontSize: (excerptFontSize) => set({ excerptFontSize }),
   setFlattenedCropUrl: (flattenedCropUrl) => set({ flattenedCropUrl }),
@@ -101,6 +112,42 @@ export const useSnipperStore = create<SnipperState>((set, get) => ({
   setScratchpad: (scratchpad) => set({ scratchpad }),
   setScratchpadSelection: (scratchpadSelection) => set({ scratchpadSelection }),
   setCaption: (caption) => set({ caption }),
+  setSelectedSourceLogoId: (selectedSourceLogoId) =>
+    set({ selectedSourceLogoId, logoUploadError: null }),
+  uploadCustomLogo: (file) => {
+    try {
+      const { customLogoObjectUrl } = get();
+      if (customLogoObjectUrl) {
+        URL.revokeObjectURL(customLogoObjectUrl);
+      }
+
+      const objectUrl = createLogoObjectUrl(file);
+      set({
+        customLogoObjectUrl: objectUrl,
+        selectedSourceLogoId: 'custom',
+        logoUploadError: null,
+      });
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : 'Custom logo upload failed';
+      set({ logoUploadError: message });
+    }
+  },
+  clearCustomLogo: () => {
+    const { customLogoObjectUrl, selectedSourceLogoId } = get();
+    if (customLogoObjectUrl) {
+      URL.revokeObjectURL(customLogoObjectUrl);
+    }
+
+    set({
+      customLogoObjectUrl: null,
+      logoUploadError: null,
+      selectedSourceLogoId:
+        selectedSourceLogoId === 'custom'
+          ? DEFAULT_SOURCE_LOGO_ID
+          : selectedSourceLogoId,
+    });
+  },
   useSelectedAsExcerpt: () => {
     const { scratchpadSelection } = get();
     if (!scratchpadSelection.text) return;
