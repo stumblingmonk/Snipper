@@ -35,6 +35,7 @@ export function ControlsPanel({
       </section>
 
       <section className={styles.section}>
+        <h3 className={styles.label}>Export</h3>
         <button
           type="button"
           className={styles.exportButton}
@@ -55,18 +56,6 @@ export function ControlsPanel({
             {exportError}
           </p>
         ) : null}
-      </section>
-
-      <section className={styles.section}>
-        <h3 className={styles.label}>Phase 1 checks</h3>
-        <ul className={styles.checklist}>
-          <li>Google Fonts headline + body</li>
-          <li>SVG logo (viewBox paths)</li>
-          <li>JPEG background</li>
-          <li>Transparent PNG → canvas crop</li>
-          <li>Long headline + URL token</li>
-          <li>cacheBust: false</li>
-        </ul>
       </section>
     </aside>
   );

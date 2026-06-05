@@ -20,8 +20,8 @@
   line-height: 1.5;
 }
 
-.field {
-  margin-bottom: 20px;
+.section {
+  margin-bottom: 24px;
 }
 
 .fieldLabel {
@@ -34,14 +34,48 @@
   color: var(--color-muted);
 }
 
-.fieldValue {
-  margin: 0;
-  padding: 12px 14px;
+.input,
+.textarea {
+  display: block;
+  width: 100%;
+  margin-bottom: 8px;
+  padding: 10px 12px;
   border: 1px solid var(--color-border);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.03);
+  color: var(--color-text);
   font-size: 14px;
   line-height: 1.5;
-  overflow-wrap: anywhere;
-  word-break: break-word;
+  resize: vertical;
+}
+
+.input:focus,
+.textarea:focus {
+  outline: 2px solid rgba(255, 24, 23, 0.45);
+  outline-offset: 1px;
+}
+
+.buttonRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.secondaryButton {
+  padding: 8px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--color-text);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.secondaryButton:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.secondaryButton:not(:disabled):hover {
+  background: rgba(255, 255, 255, 0.08);
 }

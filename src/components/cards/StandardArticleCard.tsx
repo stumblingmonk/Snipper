@@ -5,6 +5,7 @@ export interface StandardArticleCardProps {
   format: FormatSpec;
   sourceName: string;
   headline: string;
+  subhead: string;
   excerpt: string;
   logoUrl: string | null;
   backgroundUrl: string | null;
@@ -20,6 +21,7 @@ export function StandardArticleCard({
   format,
   sourceName,
   headline,
+  subhead,
   excerpt,
   logoUrl,
   backgroundUrl,
@@ -41,48 +43,58 @@ export function StandardArticleCard({
       }}
       aria-label="Social card preview"
     >
-      <div className={styles.overlay} />
+      <div className={styles.articleContainer}>
+        <header className={styles.header}>
+          {logoUrl ? (
+            <img
+              className={styles.logo}
+              src={logoUrl}
+              alt=""
+              draggable={false}
+            />
+          ) : null}
+          {sourceName ? (
+            <span className={styles.sourceName}>{sourceName}</span>
+          ) : null}
+        </header>
 
-      <header className={styles.header}>
-        {logoUrl ? (
-          <img
-            className={styles.logo}
-            src={logoUrl}
-            alt=""
-            draggable={false}
-          />
-        ) : null}
-        <span className={styles.sourceName}>{sourceName}</span>
-      </header>
-
-      <div
-        className={styles.headlineZone}
-        style={{ fontSize: headlineFontSize }}
-      >
-        <h1 className={styles.headline}>{headline}</h1>
-      </div>
-
-      {showImage && imageUrl ? (
-        <div className={styles.imageZone}>
-          <img
-            className={styles.articleImage}
-            src={imageUrl}
-            alt=""
-            draggable={false}
-          />
+        <div
+          className={styles.headlineZone}
+          style={{ fontSize: headlineFontSize }}
+        >
+          <h1 className={styles.headline}>{headline}</h1>
         </div>
-      ) : null}
 
-      <div
-        className={styles.excerptZone}
-        style={{ fontSize: excerptFontSize }}
-      >
-        <p className={styles.excerpt}>{excerpt}</p>
+        {subhead ? (
+          <div className={styles.subheadZone}>
+            <p className={styles.subhead}>{subhead}</p>
+          </div>
+        ) : null}
+
+        {showImage && imageUrl ? (
+          <div className={styles.imageZone}>
+            <img
+              className={styles.articleImage}
+              src={imageUrl}
+              alt=""
+              draggable={false}
+            />
+          </div>
+        ) : null}
+
+        <div
+          className={styles.excerptZone}
+          style={{ fontSize: excerptFontSize }}
+        >
+          <p className={styles.excerpt}>{excerpt}</p>
+        </div>
+
+        {sourceName ? (
+          <footer className={styles.footer}>
+            <span className={styles.footerSource}>{sourceName}</span>
+          </footer>
+        ) : null}
       </div>
-
-      <footer className={styles.footer}>
-        <span className={styles.footerSource}>{sourceName}</span>
-      </footer>
     </article>
   );
 }
