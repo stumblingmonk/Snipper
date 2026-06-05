@@ -1,0 +1,113 @@
+.fieldWrap {
+  position: relative;
+  width: 100%;
+  margin-bottom: 6px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: var(--panel-bg-raised);
+}
+
+.highlightLayer {
+  position: absolute;
+  inset: 0;
+  padding: 8px 10px;
+  overflow: hidden;
+  pointer-events: none;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  color: var(--text-primary);
+}
+
+.highlightLayerInput {
+  composes: highlightLayer;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.highlightLayerTextarea {
+  composes: highlightLayer;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.overflow {
+  color: var(--error);
+  background: var(--error-soft);
+  border-radius: 2px;
+}
+
+.inputBase,
+.textareaBase {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.inputBase {
+  min-height: 38px;
+}
+
+.textareaBase {
+  resize: vertical;
+}
+
+.inputOverlay {
+  composes: inputBase;
+  background: transparent;
+  color: transparent;
+  caret-color: var(--text-primary);
+}
+
+.inputOverlay:focus {
+  outline: none;
+}
+
+.inputOverlay:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.textareaOverlay {
+  composes: textareaBase;
+  background: transparent;
+  color: transparent;
+  caret-color: var(--text-primary);
+}
+
+.textareaOverlay:focus {
+  outline: none;
+}
+
+.textareaOverlay:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.inputPlain {
+  composes: inputBase;
+  background: var(--panel-bg-raised);
+  color: var(--text-primary);
+}
+
+.inputPlain:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.textareaPlain {
+  composes: textareaBase;
+  background: var(--panel-bg-raised);
+  color: var(--text-primary);
+}
+
+.textareaPlain:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}

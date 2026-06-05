@@ -1,67 +1,89 @@
 .panel {
+  flex: 1 1 0;
   display: flex;
   flex-direction: column;
   min-height: 0;
-  background: #12151e;
+  overflow: hidden;
+  background: var(--app-bg-deep);
 }
 
 .header {
+  flex-shrink: 0;
   display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 24px 24px 12px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 22px;
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--panel-bg);
 }
 
-.headerMain {
+.headerLeft {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex-wrap: nowrap;
 }
 
 .heading {
   margin: 0;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--color-muted);
+  color: var(--text-secondary);
+  white-space: nowrap;
 }
 
 .meta {
+  flex-shrink: 0;
   font-size: 12px;
-  color: var(--color-muted);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+  text-align: right;
+  white-space: nowrap;
 }
 
 .zoomControls {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
 }
 
 .zoomButton {
-  padding: 6px 10px;
-  border: 1px solid var(--color-border);
+  min-height: 28px;
+  padding: 4px 10px;
+  border: 1px solid var(--border-subtle);
   border-radius: 6px;
-  background: rgba(255, 255, 255, 0.03);
-  color: var(--color-muted);
-  font-size: 12px;
+  background: var(--panel-bg-soft);
+  color: var(--text-secondary);
+  font-size: 11px;
   font-weight: 500;
 }
 
+.zoomButton:hover {
+  border-color: var(--border-strong);
+  color: var(--text-primary);
+}
+
 .zoomButtonActive {
-  border-color: var(--color-accent);
-  color: var(--color-text);
-  box-shadow: inset 0 0 0 1px var(--color-accent);
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--text-primary);
+  box-shadow: inset 0 0 0 1px var(--accent);
 }
 
 .viewport {
-  flex: 1;
+  flex: 1 1 0;
+  min-height: 0;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
   padding: 24px;
   overflow: auto;
+  overscroll-behavior: contain;
 }
 
 .scaledFrame {

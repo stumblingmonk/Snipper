@@ -1,0 +1,70 @@
+.editorWrap {
+  position: relative;
+  width: 100%;
+  margin-bottom: 8px;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: var(--panel-bg-raised);
+}
+
+.highlightLayer {
+  position: absolute;
+  inset: 0;
+  padding: 10px 12px;
+  overflow: hidden;
+  pointer-events: none;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-primary);
+}
+
+.overflow {
+  color: var(--error);
+  background: var(--error-soft);
+  border-radius: 2px;
+}
+
+.textareaBase {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  min-height: 168px;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.5;
+  resize: vertical;
+  overflow: auto;
+}
+
+.textareaOverlay {
+  composes: textareaBase;
+  background: transparent;
+  color: transparent;
+  caret-color: var(--text-primary);
+}
+
+.textareaOverlay:focus {
+  outline: none;
+}
+
+.textareaOverlay:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.textareaPlain {
+  composes: textareaBase;
+  background: var(--panel-bg-raised);
+  color: var(--text-primary);
+}
+
+.textareaPlain:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}

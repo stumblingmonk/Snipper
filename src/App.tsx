@@ -141,27 +141,26 @@ export default function App() {
 
   return (
     <div className={styles.app}>
-      <header className={styles.topBar}>
-        <h1 className={styles.appTitle}>SNIPPER</h1>
-        <span className={styles.phaseBadge}>
-          Phase 7 — First Usable Build
-        </span>
-      </header>
-
       <div className={styles.columns}>
-        <ControlsPanel
-          onExport={handleExport}
-          exportStatus={exportStatus}
-          exportError={exportError}
-          lastExportSize={lastExportSize}
-          backgroundFallbackNote={background.fallbackNote}
-        />
+        <div className={styles.columnShell}>
+          <ControlsPanel
+            onExport={handleExport}
+            exportStatus={exportStatus}
+            exportError={exportError}
+            lastExportSize={lastExportSize}
+            backgroundFallbackNote={background.fallbackNote}
+          />
+        </div>
 
-        <ContentWorkspace />
+        <div className={styles.columnShell}>
+          <ContentWorkspace />
+        </div>
 
-        <PreviewPanel format={format}>
-          <PreviewCardWithTextFit {...sharedCardProps} />
-        </PreviewPanel>
+        <div className={styles.columnShell}>
+          <PreviewPanel format={format}>
+            <PreviewCardWithTextFit {...sharedCardProps} />
+          </PreviewPanel>
+        </div>
       </div>
 
       <div

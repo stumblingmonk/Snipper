@@ -1,0 +1,42 @@
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.stepButton {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  background: var(--panel-bg-raised);
+  color: var(--text-primary);
+  font-size: 15px;
+  line-height: 1;
+}
+
+.stepButton:disabled {
+  opacity: 0.45;
+}
+
+.stepButton:not(:disabled):hover {
+  border-color: var(--border-strong);
+  background: var(--panel-bg-soft);
+}
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 2px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.toggle input {
+  margin: 0;
+}

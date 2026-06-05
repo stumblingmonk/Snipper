@@ -1,82 +1,169 @@
 .section {
-  margin-bottom: 24px;
+  margin-bottom: 22px;
+}
+
+.sectionEmbedded {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.sectionLeft {
+  min-width: 0;
+  height: 100%;
+}
+
+.sectionCropColumn {
+  flex: 0 0 auto;
+  align-self: stretch;
+  width: 240px;
+  max-width: 240px;
 }
 
 .label {
-  margin: 0 0 10px;
-  font-size: 12px;
+  margin: 0 0 2px;
+  font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--color-muted);
+  color: var(--text-muted);
 }
 
-.modeRow {
+.sublabel {
+  margin: 0 0 8px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.leftControls {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.uploadRow,
+.imageModeRow {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 12px;
+  align-items: center;
+  gap: 6px;
+}
+
+.controlsColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  height: 100%;
+  min-height: 0;
+}
+
+.controlsLabel {
+  margin: 0;
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
 }
 
 .modeOption {
-  padding: 8px 12px;
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.04);
-  color: var(--color-text);
-  font-size: 13px;
+  min-height: 30px;
+  padding: 5px 10px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  background: var(--panel-bg-soft);
+  color: var(--text-primary);
+  font-size: 12px;
   font-weight: 500;
   cursor: pointer;
+  white-space: nowrap;
+}
+
+.modeOptionCompact {
+  min-height: 28px;
+  padding: 4px 8px;
+  font-size: 11px;
+}
+
+.modeOption:hover {
+  border-color: var(--border-strong);
 }
 
 .modeOptionSelected {
-  border-color: var(--color-accent);
-  box-shadow: inset 0 0 0 1px var(--color-accent);
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  box-shadow: inset 0 0 0 1px var(--accent);
 }
 
-.cropControls {
+.cropStack {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 6px;
+  width: 100%;
+}
+
+.sliderRow {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
 }
 
 .sliderLabel {
   display: flex;
   justify-content: space-between;
-  gap: 12px;
-  font-size: 12px;
-  color: var(--color-muted);
+  gap: 8px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
 }
 
 .sliderValue {
-  color: var(--color-text);
+  color: var(--text-secondary);
+  font-size: 10px;
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
+  text-transform: none;
+  letter-spacing: normal;
 }
 
 .slider {
   width: 100%;
+  height: 3px;
+  margin: 0;
 }
 
 .resetButton {
-  align-self: flex-start;
-  padding: 8px 12px;
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.04);
-  color: var(--color-text);
-  font-size: 13px;
+  min-height: 28px;
+  padding: 4px 9px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  background: var(--panel-bg-soft);
+  color: var(--text-primary);
+  font-size: 11px;
   font-weight: 500;
+  white-space: nowrap;
 }
 
-.resetButton:hover {
-  background: rgba(255, 255, 255, 0.08);
+.resetButton:hover:not(:disabled) {
+  border-color: var(--border-strong);
+  background: var(--panel-bg-raised);
+}
+
+.resetButton:disabled {
+  opacity: 0.45;
 }
 
 .helpText {
-  margin: 0;
-  font-size: 12px;
+  margin: 6px 0 0;
+  font-size: 11px;
   line-height: 1.4;
-  color: var(--color-muted);
+  color: var(--text-muted);
 }
 
 .srOnly {

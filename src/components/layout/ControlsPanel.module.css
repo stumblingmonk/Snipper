@@ -1,81 +1,156 @@
 .panel {
-  padding: 24px 20px;
-  border-right: 1px solid var(--color-border);
-  background: var(--color-panel);
-  overflow-y: auto;
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border-right: 1px solid var(--border-subtle);
+  background: var(--panel-bg);
+  overflow: hidden;
 }
 
-.heading {
-  margin: 0 0 24px;
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
+.brandHeader {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 14px 18px 14px;
+  background: var(--panel-bg);
+}
+
+.appTitle {
+  margin: 0;
+  font-family: var(--font-headline);
+  font-size: 24px;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  color: var(--text-primary);
+}
+
+.byline {
+  margin: 0;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--color-muted);
+  color: var(--text-muted);
+}
+
+.phaseBadge {
+  align-self: flex-start;
+  margin-top: 2px;
+  font-size: 10px;
+  color: var(--text-muted);
+  padding: 2px 8px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  background: var(--panel-bg-soft);
+}
+
+.panelBody {
+  flex: 1 1 0;
+  min-height: 0;
+  padding: 16px 18px 12px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .section {
-  margin-bottom: 24px;
+  margin-bottom: 18px;
 }
 
-.label {
-  margin: 0 0 6px;
-  font-size: 12px;
+.sectionLabel {
+  display: block;
+  margin: 0 0 8px;
+  font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--color-muted);
+  color: var(--text-muted);
 }
 
-.value {
-  margin: 0;
-  font-size: 15px;
+.input {
+  display: block;
+  width: 100%;
+  margin-bottom: 12px;
+  padding: 8px 10px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  background: var(--panel-bg-soft);
+  color: var(--text-primary);
+  font-size: 13px;
   line-height: 1.4;
 }
 
+.input:hover {
+  border-color: var(--border-strong);
+}
+
+.input:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+  border-color: var(--accent);
+}
+
 .note {
-  margin: -8px 0 24px;
-  padding: 10px 12px;
+  margin: 0 0 14px;
+  padding: 8px 10px;
   border-radius: 8px;
-  border: 1px solid var(--color-border);
-  background: rgba(255, 255, 255, 0.04);
-  font-size: 12px;
-  line-height: 1.5;
-  color: var(--color-muted);
+  border: 1px solid var(--border-subtle);
+  background: var(--panel-bg-soft);
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+.exportFooter {
+  flex-shrink: 0;
+  padding: 12px 18px 16px;
+  border-top: 1px solid var(--border-subtle);
+  background: var(--panel-bg);
 }
 
 .exportButton {
   width: 100%;
-  padding: 12px 16px;
-  border: none;
+  min-height: 38px;
+  padding: 9px 14px;
+  border: 1px solid transparent;
   border-radius: 8px;
-  background: var(--color-accent);
-  color: #fff;
+  background: var(--accent);
+  color: var(--text-primary);
   font-weight: 600;
   letter-spacing: 0.02em;
 }
 
+.exportButton:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.exportButton:active:not(:disabled) {
+  background: var(--accent-active);
+}
+
 .exportButton:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+  opacity: 0.55;
 }
 
 .success {
-  margin: 10px 0 0;
-  font-size: 13px;
-  color: #6dd4a8;
+  margin: 8px 0 0;
+  padding: 7px 9px;
+  border-radius: 6px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--success);
+  background: var(--success-soft);
 }
 
 .error {
-  margin: 10px 0 0;
-  font-size: 13px;
-  color: #ff8a80;
-}
-
-.checklist {
-  margin: 0;
-  padding-left: 18px;
-  font-size: 13px;
-  line-height: 1.6;
-  color: var(--color-muted);
+  margin: 8px 0 0;
+  padding: 7px 9px;
+  border-radius: 6px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--error);
+  background: var(--error-soft);
 }

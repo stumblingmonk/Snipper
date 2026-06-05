@@ -1,6 +1,20 @@
+import type { FormatKey } from '@/constants/formats';
 import { FORMAT_LIST } from '@/constants/formats';
 import { useSnipperStore } from '@/store/snipperStore';
 import styles from './FormatPicker.module.css';
+
+function formatIconClass(key: FormatKey): string {
+  switch (key) {
+    case 'square':
+      return styles.formatIconSquare;
+    case 'portrait':
+      return styles.formatIconPortrait;
+    case 'story':
+      return styles.formatIconStory;
+    case 'linkedin':
+      return styles.formatIconLinkedin;
+  }
+}
 
 export function FormatPicker() {
   const formatKey = useSnipperStore((s) => s.format);
@@ -28,9 +42,17 @@ export function FormatPicker() {
               onChange={() => setFormat(format.key)}
               className={styles.srOnly}
             />
-            <span className={styles.optionLabel}>{format.label}</span>
-            <span className={styles.optionMeta}>
-              {format.width} × {format.height}
+            <span
+              className={[styles.formatIcon, formatIconClass(format.key)].join(
+                ' ',
+              )}
+              aria-hidden="true"
+            />
+            <span className={styles.optionContent}>
+              <span className={styles.optionLabel}>{format.label}</span>
+              <span className={styles.optionMeta}>
+                {format.width} × {format.height}
+              </span>
             </span>
           </label>
         ))}

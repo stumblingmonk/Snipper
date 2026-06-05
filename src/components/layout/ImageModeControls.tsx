@@ -1,4 +1,5 @@
 import type { ImageMode } from '@/constants/formats';
+import type { ReactNode } from 'react';
 import { useSnipperStore } from '@/store/snipperStore';
 import styles from './ImageModeControls.module.css';
 
@@ -8,7 +9,55 @@ const IMAGE_MODES: { id: ImageMode; label: string }[] = [
   { id: 'none', label: 'None' },
 ];
 
-export function ImageModeControls() {
+type ImageModeControlsPart = 'all' | 'left' | 'crop';
+
+interface ImageModeControlsProps {
+  embedded?: boolean;
+  part?: ImageModeControlsPart;
+  children?: ReactNode;
+}
+
+function ModeOption({
+  mode,
+  embedded,
+  imageMode,
+  name,
+  onSelect,
+}: {
+  mode: (typeof IMAGE_MODES)[number];
+  embedded: boolean;
+  imageMode: ImageMode;
+  name: string;
+  onSelect: (mode: ImageMode) => void;
+}) {
+  return (
+    <label
+      className={[
+        styles.modeOption,
+        embedded ? styles.modeOptionCompact : '',
+        imageMode === mode.id ? styles.modeOptionSelected : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+    >
+      <input
+        type="radio"
+        name={name}
+        value={mode.id}
+        checked={imageMode === mode.id}
+        onChange={() => onSelect(mode.id)}
+        className={styles.srOnly}
+      />
+      {mode.label}
+    </label>
+  );
+}
+
+export function ImageModeControls({
+  embedded = false,
+  part = 'all',
+  children,
+}: ImageModeControlsProps) {
   const imageMode = useSnipperStore((s) => s.imageMode);
   const cropZoom = useSnipperStore((s) => s.cropZoom);
   const cropOffsetX = useSnipperStore((s) => s.cropOffsetX);
@@ -20,97 +69,133 @@ export function ImageModeControls() {
   const setCropOffsetY = useSnipperStore((s) => s.setCropOffsetY);
   const resetCrop = useSnipperStore((s) => s.resetCrop);
 
+  const showLeft = part === 'all' || part === 'left';
+  const showCrop = (part === 'all' || part === 'crop') && imageMode === 'crop';
+
+  if (part === 'crop' && imageMode !== 'crop') {
+    return null;
+  }
+
+  const modeName = embedded ? 'image-mode-content' : 'image-mode';
+
+  const sectionClass = [
+    styles.section,
+    embedded ? styles.sectionEmbedded : '',
+    part === 'left' ? styles.sectionLeft : '',
+    part === 'crop' ? styles.sectionCropColumn : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+
   return (
-    <section className={styles.section}>
-      <h3 className={styles.label}>Image Mode</h3>
-      <div className={styles.modeRow} role="radiogroup" aria-label="Image mode">
-        {IMAGE_MODES.map((mode) => (
-          <label
-            key={mode.id}
-            className={[
-              styles.modeOption,
-              imageMode === mode.id ? styles.modeOptionSelected : '',
-            ]
-              .filter(Boolean)
-              .join(' ')}
-          >
-            <input
-              type="radio"
-              name="image-mode"
-              value={mode.id}
-              checked={imageMode === mode.id}
-              onChange={() => setImageMode(mode.id)}
-              className={styles.srOnly}
+    <section className={sectionClass}>
+      {!embedded && showLeft ? <h3 className={styles.label}>Image</h3> : null}
+      {!embedded && showLeft ? (
+        <p className={styles.sublabel}>Image mode</p>
+      ) : null}
+
+      {showLeft ? (
+        <div className={styles.leftControls}>
+          <div className={styles.uploadRow}>{children}</div>
+          <div className={styles.imageModeRow} role="radiogroup" aria-label="Image mode">
+            <ModeOption
+              mode={IMAGE_MODES[0]}
+              embedded={embedded}
+              imageMode={imageMode}
+              name={modeName}
+              onSelect={setImageMode}
             />
-            {mode.label}
-          </label>
-        ))}
-      </div>
-
-      {imageMode === 'crop' ? (
-        <div className={styles.cropControls}>
-          <label className={styles.sliderLabel} htmlFor="crop-zoom">
-            Zoom
-            <span className={styles.sliderValue}>{cropZoom.toFixed(2)}×</span>
-          </label>
-          <input
-            id="crop-zoom"
-            type="range"
-            min="1"
-            max="3"
-            step="0.01"
-            value={cropZoom}
-            onChange={(e) => setCropZoom(Number(e.target.value))}
-            className={styles.slider}
-          />
-
-          <label className={styles.sliderLabel} htmlFor="crop-x">
-            X position
-            <span className={styles.sliderValue}>{cropOffsetX.toFixed(2)}</span>
-          </label>
-          <input
-            id="crop-x"
-            type="range"
-            min="-1"
-            max="1"
-            step="0.01"
-            value={cropOffsetX}
-            onChange={(e) => setCropOffsetX(Number(e.target.value))}
-            className={styles.slider}
-          />
-
-          <label className={styles.sliderLabel} htmlFor="crop-y">
-            Y position
-            <span className={styles.sliderValue}>{cropOffsetY.toFixed(2)}</span>
-          </label>
-          <input
-            id="crop-y"
-            type="range"
-            min="-1"
-            max="1"
-            step="0.01"
-            value={cropOffsetY}
-            onChange={(e) => setCropOffsetY(Number(e.target.value))}
-            className={styles.slider}
-          />
-
-          <button
-            type="button"
-            className={styles.resetButton}
-            onClick={resetCrop}
-          >
-            Reset crop
-          </button>
+            <button
+              type="button"
+              className={styles.resetButton}
+              onClick={resetCrop}
+              disabled={imageMode !== 'crop'}
+            >
+              Reset crop
+            </button>
+            <ModeOption
+              mode={IMAGE_MODES[1]}
+              embedded={embedded}
+              imageMode={imageMode}
+              name={modeName}
+              onSelect={setImageMode}
+            />
+            <ModeOption
+              mode={IMAGE_MODES[2]}
+              embedded={embedded}
+              imageMode={imageMode}
+              name={modeName}
+              onSelect={setImageMode}
+            />
+          </div>
         </div>
       ) : null}
 
-      {imageMode === 'fit' ? (
+      {showCrop ? (
+        <div className={styles.controlsColumn}>
+          <h4 className={styles.controlsLabel}>Image Controls</h4>
+          <div className={styles.cropStack}>
+            <div className={styles.sliderRow}>
+              <label className={styles.sliderLabel} htmlFor="crop-zoom-content">
+                Zoom
+                <span className={styles.sliderValue}>{cropZoom.toFixed(2)}×</span>
+              </label>
+              <input
+                id="crop-zoom-content"
+                type="range"
+                min="1"
+                max="3"
+                step="0.01"
+                value={cropZoom}
+                onChange={(e) => setCropZoom(Number(e.target.value))}
+                className={styles.slider}
+              />
+            </div>
+
+            <div className={styles.sliderRow}>
+              <label className={styles.sliderLabel} htmlFor="crop-x-content">
+                X
+                <span className={styles.sliderValue}>{cropOffsetX.toFixed(2)}</span>
+              </label>
+              <input
+                id="crop-x-content"
+                type="range"
+                min="-1"
+                max="1"
+                step="0.01"
+                value={cropOffsetX}
+                onChange={(e) => setCropOffsetX(Number(e.target.value))}
+                className={styles.slider}
+              />
+            </div>
+
+            <div className={styles.sliderRow}>
+              <label className={styles.sliderLabel} htmlFor="crop-y-content">
+                Y
+                <span className={styles.sliderValue}>{cropOffsetY.toFixed(2)}</span>
+              </label>
+              <input
+                id="crop-y-content"
+                type="range"
+                min="-1"
+                max="1"
+                step="0.01"
+                value={cropOffsetY}
+                onChange={(e) => setCropOffsetY(Number(e.target.value))}
+                className={styles.slider}
+              />
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {!embedded && imageMode === 'fit' && part === 'all' ? (
         <p className={styles.helpText}>
           Fit shows the full image inside the frame with a light matte.
         </p>
       ) : null}
 
-      {imageMode === 'none' ? (
+      {!embedded && imageMode === 'none' && part === 'all' ? (
         <p className={styles.helpText}>No article image is rendered on the card.</p>
       ) : null}
     </section>

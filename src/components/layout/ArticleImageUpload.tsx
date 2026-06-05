@@ -8,7 +8,11 @@ import styles from './ArticleImageUpload.module.css';
 
 const MAX_MB = ARTICLE_IMAGE_MAX_BYTES / (1024 * 1024);
 
-export function ArticleImageUpload() {
+interface ArticleImageUploadProps {
+  compact?: boolean;
+}
+
+export function ArticleImageUpload({ compact = false }: ArticleImageUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const imageMode = useSnipperStore((s) => s.imageMode);
@@ -29,9 +33,11 @@ export function ArticleImageUpload() {
   };
 
   return (
-    <section className={styles.section}>
-      <span className={styles.fieldLabel}>Article Image</span>
-
+    <section
+      className={[styles.section, compact ? styles.sectionCompact : '']
+        .filter(Boolean)
+        .join(' ')}
+    >
       <div className={styles.uploadRow}>
         <input
           ref={fileInputRef}
@@ -44,6 +50,7 @@ export function ArticleImageUpload() {
           type="button"
           className={styles.secondaryButton}
           onClick={() => fileInputRef.current?.click()}
+          title={`PNG, JPG, JPEG, or WEBP up to ${MAX_MB} MB`}
         >
           Upload article image
         </button>
@@ -53,16 +60,18 @@ export function ArticleImageUpload() {
             className={styles.secondaryButton}
             onClick={clearUploadedArticleImage}
           >
-            Clear uploaded image
+            Clear
           </button>
         ) : null}
       </div>
 
-      <p className={styles.helpText}>
-        PNG, JPG, JPEG, or WEBP up to {MAX_MB} MB. Uploads are session-only.
-      </p>
+      {!compact ? (
+        <p className={styles.helpText}>
+          PNG, JPG, JPEG, or WEBP up to {MAX_MB} MB. Uploads are session-only.
+        </p>
+      ) : null}
 
-      {imageMode === 'none' ? (
+      {!compact && imageMode === 'none' ? (
         <p className={styles.note}>
           Image mode is None — uploaded image is stored but hidden on the card.
         </p>

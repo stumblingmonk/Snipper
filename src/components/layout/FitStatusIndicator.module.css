@@ -1,25 +1,22 @@
-.normal {
-  color: var(--color-muted);
+.fits {
+  color: var(--success);
+}
+
+.empty {
+  color: var(--text-muted);
 }
 
 .tight {
-  color: #e6c14a;
+  color: var(--warning);
 }
 
 .tooLong {
-  color: #ff8a80;
+  color: var(--error);
 }
 
-.indicator {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  margin: 8px 0 0;
-  font-size: 12px;
-  line-height: 1.4;
-}
-
-.meta {
+.inlineStatus {
   font-size: 11px;
-  opacity: 0.9;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }

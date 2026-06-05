@@ -2,21 +2,17 @@
   margin-bottom: 0;
 }
 
-.fieldLabel {
-  display: block;
-  margin-bottom: 10px;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--color-muted);
+.sectionCompact {
+  flex: 0 1 auto;
+  width: auto;
+  min-width: 0;
 }
 
 .uploadRow {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 8px;
+  gap: 6px;
+  margin-bottom: 0;
 }
 
 .fileInput {
@@ -24,17 +20,19 @@
 }
 
 .secondaryButton {
-  padding: 8px 12px;
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.04);
-  color: var(--color-text);
-  font-size: 13px;
+  min-height: 30px;
+  padding: 6px 10px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  background: var(--panel-bg-raised);
+  color: var(--text-primary);
+  font-size: 12px;
   font-weight: 500;
 }
 
 .secondaryButton:hover {
-  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--border-strong);
+  background: var(--panel-bg-soft);
 }
 
 .helpText,
@@ -42,7 +40,7 @@
   margin: 0;
   font-size: 12px;
   line-height: 1.4;
-  color: var(--color-muted);
+  color: var(--text-muted);
 }
 
 .note {
@@ -52,5 +50,5 @@
 .error {
   margin: 8px 0 0;
   font-size: 12px;
-  color: #ff8a80;
+  color: var(--error);
 }

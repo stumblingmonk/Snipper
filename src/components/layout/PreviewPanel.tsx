@@ -16,6 +16,9 @@ const ZOOM_OPTIONS: { mode: PreviewZoomMode; label: string }[] = [
   { mode: 1, label: '100%' },
 ];
 
+const VIEWPORT_PADDING_X = 48;
+const VIEWPORT_PADDING_Y = 48;
+
 export function PreviewPanel({ children, format }: PreviewPanelProps) {
   const viewportRef = useRef<HTMLDivElement>(null);
   const [fitScale, setFitScale] = useState(0.35);
@@ -26,15 +29,14 @@ export function PreviewPanel({ children, format }: PreviewPanelProps) {
     if (!el) return;
 
     const updateScale = () => {
-      const padding = 48;
-      const availableW = el.clientWidth - padding;
-      const availableH = el.clientHeight - padding;
+      const availableW = Math.max(0, el.clientWidth - VIEWPORT_PADDING_X);
+      const availableH = Math.max(0, el.clientHeight - VIEWPORT_PADDING_Y);
       const nextFitScale = Math.min(
         availableW / format.width,
         availableH / format.height,
         1,
       );
-      setFitScale(Math.max(0.2, nextFitScale));
+      setFitScale(Math.max(0.1, nextFitScale));
     };
 
     updateScale();
@@ -48,33 +50,35 @@ export function PreviewPanel({ children, format }: PreviewPanelProps) {
   }, [format.key]);
 
   const scale = zoomMode === 'fit' ? fitScale : zoomMode;
+  const scaleLabel =
+    zoomMode === 'fit' ? `Fit ${Math.round(scale * 100)}%` : `${Math.round(scale * 100)}%`;
 
   return (
     <aside className={styles.panel}>
       <div className={styles.header}>
-        <div className={styles.headerMain}>
+        <div className={styles.headerLeft}>
           <h2 className={styles.heading}>Live Preview</h2>
-          <span className={styles.meta}>
-            {format.width} × {format.height} · scale {Math.round(scale * 100)}%
-          </span>
+          <div className={styles.zoomControls} role="group" aria-label="Preview zoom">
+            {ZOOM_OPTIONS.map(({ mode, label }) => (
+              <button
+                key={label}
+                type="button"
+                className={[
+                  styles.zoomButton,
+                  zoomMode === mode ? styles.zoomButtonActive : '',
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
+                onClick={() => setZoomMode(mode)}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
-        <div className={styles.zoomControls} role="group" aria-label="Preview zoom">
-          {ZOOM_OPTIONS.map(({ mode, label }) => (
-            <button
-              key={label}
-              type="button"
-              className={[
-                styles.zoomButton,
-                zoomMode === mode ? styles.zoomButtonActive : '',
-              ]
-                .filter(Boolean)
-                .join(' ')}
-              onClick={() => setZoomMode(mode)}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
+        <span className={styles.meta}>
+          {format.label} — {format.width} × {format.height} — {scaleLabel}
+        </span>
       </div>
 
       <div ref={viewportRef} className={styles.viewport}>

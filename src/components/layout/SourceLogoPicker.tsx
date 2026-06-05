@@ -6,16 +6,6 @@ import {
 import { useSnipperStore } from '@/store/snipperStore';
 import styles from './SourceLogoPicker.module.css';
 
-function getActiveLogoLabel(selectedSourceLogoId: SourceLogoSelectionId): string {
-  if (selectedSourceLogoId === 'none') return 'None';
-  if (selectedSourceLogoId === 'custom') return 'Custom upload';
-
-  return (
-    BUILTIN_SOURCE_LOGOS.find((logo) => logo.id === selectedSourceLogoId)
-      ?.label ?? 'Selected'
-  );
-}
-
 export function SourceLogoPicker() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -41,8 +31,6 @@ export function SourceLogoPicker() {
 
   return (
     <section className={styles.section}>
-      <span className={styles.fieldLabel}>Source Logo</span>
-
       <div className={styles.optionGrid} role="radiogroup" aria-label="Source logo">
         {BUILTIN_SOURCE_LOGOS.map((logo) => (
           <label
@@ -155,10 +143,6 @@ export function SourceLogoPicker() {
           {logoUploadError}
         </p>
       ) : null}
-
-      <p className={styles.activeLogo}>
-        Active logo: {getActiveLogoLabel(selectedSourceLogoId)}
-      </p>
     </section>
   );
 }

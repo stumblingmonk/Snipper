@@ -1,6 +1,6 @@
-import { ImageModeControls } from '@/components/layout/ImageModeControls';
 import { FormatPicker } from '@/components/layout/FormatPicker';
-import { TextFitControls } from '@/components/layout/TextFitControls';
+import { SourceLogoPicker } from '@/components/layout/SourceLogoPicker';
+import { useSnipperStore } from '@/store/snipperStore';
 import styles from './ControlsPanel.module.css';
 
 interface ControlsPanelProps {
@@ -19,30 +19,47 @@ export function ControlsPanel({
   backgroundFallbackNote,
 }: ControlsPanelProps) {
   const isExporting = exportStatus === 'exporting';
+  const sourceName = useSnipperStore((s) => s.sourceName);
+  const setSourceName = useSnipperStore((s) => s.setSourceName);
 
   return (
     <aside className={styles.panel}>
-      <h2 className={styles.heading}>Design & Export</h2>
+      <header className={styles.brandHeader}>
+        <p className={styles.appTitle}>SNIPPER</p>
+        <p className={styles.byline}>BY MARK BRINN FOR OBB</p>
+        <span className={styles.phaseBadge}>Phase 7B — Operator UI Cleanup</span>
+      </header>
 
-      <section className={styles.section}>
-        <h3 className={styles.label}>Template</h3>
-        <p className={styles.value}>Standard Article</p>
-      </section>
+      <div className={styles.panelBody}>
+        <FormatPicker />
 
-      <FormatPicker />
+        {backgroundFallbackNote ? (
+          <p className={styles.note} role="status">
+            {backgroundFallbackNote}
+          </p>
+        ) : null}
 
-      {backgroundFallbackNote ? (
-        <p className={styles.note} role="status">
-          {backgroundFallbackNote}
-        </p>
-      ) : null}
+        <section className={styles.section}>
+          <h3 className={styles.sectionLabel}>Publication / Source</h3>
 
-      <ImageModeControls />
+          <label className={styles.sectionLabel} htmlFor="source-name">
+            Publication Name
+          </label>
+          <input
+            id="source-name"
+            type="text"
+            className={styles.input}
+            value={sourceName}
+            onChange={(e) => setSourceName(e.target.value)}
+            placeholder="Shown in card footer"
+          />
 
-      <TextFitControls />
+          <label className={styles.sectionLabel}>Source Logo</label>
+          <SourceLogoPicker />
+        </section>
+      </div>
 
-      <section className={styles.section}>
-        <h3 className={styles.label}>Export</h3>
+      <footer className={styles.exportFooter}>
         <button
           type="button"
           className={styles.exportButton}
@@ -63,7 +80,7 @@ export function ControlsPanel({
             {exportError}
           </p>
         ) : null}
-      </section>
+      </footer>
     </aside>
   );
 }

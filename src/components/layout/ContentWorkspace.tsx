@@ -1,7 +1,17 @@
-import { useCallback, useRef } from 'react';
-import { FitStatusIndicator } from '@/components/layout/FitStatusIndicator';
+import { useCallback, useMemo, useRef } from 'react';
+import { ArticleImagePreview } from '@/components/layout/ArticleImagePreview';
 import { ArticleImageUpload } from '@/components/layout/ArticleImageUpload';
-import { SourceLogoPicker } from '@/components/layout/SourceLogoPicker';
+import { ImageModeControls } from '@/components/layout/ImageModeControls';
+import { OverflowHighlightField } from '@/components/layout/OverflowHighlightField';
+import { SnippetEditor } from '@/components/layout/SnippetEditor';
+import { TextFitFieldHeader } from '@/components/layout/TextFitFieldHeader';
+import { FORMATS } from '@/constants/formats';
+import {
+  computeArticleZones,
+  getStandardArticleLayout,
+} from '@/constants/standardArticleLayouts';
+import { useTextOverflowSplitIndex } from '@/hooks/useTextOverflowSplitIndex';
+import { resolveSourceLogoUrl } from '@/store/selectors';
 import {
   selectHasScratchpadSelection,
   useSnipperStore,
@@ -12,26 +22,96 @@ import styles from './ContentWorkspace.module.css';
 export function ContentWorkspace() {
   const scratchpadRef = useRef<HTMLTextAreaElement>(null);
 
+  const formatKey = useSnipperStore((s) => s.format);
   const sourceUrl = useSnipperStore((s) => s.sourceUrl);
-  const sourceName = useSnipperStore((s) => s.sourceName);
   const headline = useSnipperStore((s) => s.headline);
   const subhead = useSnipperStore((s) => s.subhead);
-  const excerpt = useSnipperStore((s) => s.excerpt);
   const scratchpad = useSnipperStore((s) => s.scratchpad);
   const caption = useSnipperStore((s) => s.caption);
+  const imageMode = useSnipperStore((s) => s.imageMode);
+  const headlineFitStatus = useSnipperStore((s) => s.headlineFitStatus);
+  const headlineResolvedFontSize = useSnipperStore(
+    (s) => s.headlineResolvedFontSize,
+  );
+  const sourceName = useSnipperStore((s) => s.sourceName);
+  const logoUrl = useSnipperStore(resolveSourceLogoUrl);
   const hasSelection = useSnipperStore(selectHasScratchpadSelection);
 
   const setSourceUrl = useSnipperStore((s) => s.setSourceUrl);
-  const setSourceName = useSnipperStore((s) => s.setSourceName);
   const setHeadline = useSnipperStore((s) => s.setHeadline);
   const setSubhead = useSnipperStore((s) => s.setSubhead);
-  const setExcerpt = useSnipperStore((s) => s.setExcerpt);
   const setScratchpad = useSnipperStore((s) => s.setScratchpad);
   const setScratchpadSelection = useSnipperStore((s) => s.setScratchpadSelection);
   const setCaption = useSnipperStore((s) => s.setCaption);
   const useSelectedAsExcerpt = useSnipperStore((s) => s.useSelectedAsExcerpt);
   const appendSelectedToExcerpt = useSnipperStore((s) => s.appendSelectedToExcerpt);
   const clearScratchpad = useSnipperStore((s) => s.clearScratchpad);
+
+  const format = FORMATS[formatKey];
+  const layout = useMemo(
+    () => getStandardArticleLayout(formatKey),
+    [formatKey],
+  );
+  const showImage = imageMode !== 'none';
+  const zones = useMemo(
+    () =>
+      computeArticleZones({
+        layout,
+        format,
+        showImage,
+        hasSubhead: Boolean(subhead.trim()),
+        hasLogo: Boolean(logoUrl),
+        hasFooter: Boolean(sourceName),
+      }),
+    [layout, format, showImage, subhead, logoUrl, sourceName],
+  );
+
+  const headlineMeasureStyle = useMemo(
+    () => ({
+      fontFamily: '"Special Gothic Expanded One", sans-serif',
+      fontSize: headlineResolvedFontSize,
+      fontWeight: 400,
+      lineHeight: 1.06,
+      width: zones.headlineZone.width,
+      height: zones.headlineZone.height,
+    }),
+    [
+      headlineResolvedFontSize,
+      zones.headlineZone.width,
+      zones.headlineZone.height,
+    ],
+  );
+
+  const subheadMeasureStyle = useMemo(
+    () =>
+      subhead.trim()
+        ? {
+            fontFamily: '"IBM Plex Sans", sans-serif',
+            fontSize: layout.subheadFontSize,
+            fontWeight: 500,
+            lineHeight: 1.28,
+            width: zones.headlineZone.width,
+            height: zones.subheadZoneHeight,
+          }
+        : null,
+    [
+      subhead,
+      layout.subheadFontSize,
+      zones.headlineZone.width,
+      zones.subheadZoneHeight,
+    ],
+  );
+
+  const headlineSplitIndex = useTextOverflowSplitIndex(
+    headline,
+    headlineFitStatus === 'too-long',
+    headlineMeasureStyle,
+  );
+  const subheadSplitIndex = useTextOverflowSplitIndex(
+    subhead,
+    Boolean(subhead.trim()),
+    subheadMeasureStyle,
+  );
 
   const urlIsValid = isValidHttpUrl(sourceUrl);
 
@@ -62,104 +142,80 @@ export function ContentWorkspace() {
 
   return (
     <main className={styles.panel}>
-      <h2 className={styles.heading}>Content Workspace</h2>
-      <p className={styles.note}>
-        Edit content manually. Preview and export update live from these fields.
-      </p>
+      <section className={styles.group}>
+        <div className={styles.fieldCompact}>
+          <TextFitFieldHeader field="headline" label="Headline" htmlFor="headline" />
+          <OverflowHighlightField
+            id="headline"
+            variant="input"
+            value={headline}
+            onChange={setHeadline}
+            placeholder="Headline for the card"
+            showOverflowHighlight={
+              headlineFitStatus === 'too-long' && headlineSplitIndex !== null
+            }
+            splitIndex={headlineSplitIndex}
+          />
+        </div>
 
-      <section className={styles.section}>
-        <label className={styles.fieldLabel} htmlFor="source-url">
-          Source URL
-        </label>
-        <input
-          id="source-url"
-          type="url"
-          className={styles.input}
-          value={sourceUrl}
-          onChange={(e) => setSourceUrl(e.target.value)}
-          placeholder="https://example.com/article"
-          spellCheck={false}
-        />
-        <button
-          type="button"
-          className={styles.secondaryButton}
-          onClick={handleOpenOriginal}
-          disabled={!urlIsValid}
+        <div className={styles.fieldCompact}>
+          <label className={styles.sectionLabel} htmlFor="subhead">
+            Subhead
+          </label>
+          <OverflowHighlightField
+            id="subhead"
+            variant="textarea"
+            rows={1}
+            minHeight={38}
+            value={subhead}
+            onChange={setSubhead}
+            placeholder="Optional subhead"
+            showOverflowHighlight={subheadSplitIndex !== null}
+            splitIndex={subheadSplitIndex}
+          />
+        </div>
+      </section>
+
+      <section className={styles.groupCompactArticleImage}>
+        <div
+          className={[
+            styles.imageSectionBand,
+            imageMode === 'crop' ? styles.imageSectionBandWithControls : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}
         >
-          Open Original Article
-        </button>
+          <div className={styles.imageSectionLeft}>
+            <h3 className={styles.imageSectionLabel}>Article Image</h3>
+            <ImageModeControls embedded part="left">
+              <ArticleImageUpload compact />
+            </ImageModeControls>
+          </div>
+          <ArticleImagePreview />
+          {imageMode === 'crop' ? (
+            <div className={styles.imageSectionSpacer} aria-hidden="true" />
+          ) : null}
+          <ImageModeControls embedded part="crop" />
+        </div>
       </section>
 
-      <section className={styles.section}>
-        <label className={styles.fieldLabel} htmlFor="source-name">
-          Source / Publication Name
-        </label>
-        <input
-          id="source-name"
-          type="text"
-          className={styles.input}
-          value={sourceName}
-          onChange={(e) => setSourceName(e.target.value)}
-          placeholder="Publication name"
-        />
+      <section className={styles.groupPrimary}>
+        <div className={styles.field}>
+          <TextFitFieldHeader
+            field="excerpt"
+            label="Article Snippet"
+            htmlFor="excerpt"
+          />
+          <SnippetEditor id="excerpt" rows={8} minHeight={168} />
+        </div>
       </section>
 
-      <SourceLogoPicker />
-
-      <ArticleImageUpload />
-
-      <section className={styles.section}>
-        <label className={styles.fieldLabel} htmlFor="headline">
-          Final Headline
-        </label>
-        <textarea
-          id="headline"
-          className={styles.textarea}
-          value={headline}
-          onChange={(e) => setHeadline(e.target.value)}
-          rows={4}
-          placeholder="Headline for the card"
-        />
-        <FitStatusIndicator field="headline" />
-      </section>
-
-      <section className={styles.section}>
-        <label className={styles.fieldLabel} htmlFor="subhead">
-          Subhead / Dek
-        </label>
-        <textarea
-          id="subhead"
-          className={styles.textarea}
-          value={subhead}
-          onChange={(e) => setSubhead(e.target.value)}
-          rows={2}
-          placeholder="Optional subhead or dek"
-        />
-      </section>
-
-      <section className={styles.section}>
-        <label className={styles.fieldLabel} htmlFor="excerpt">
-          Final Excerpt
-        </label>
-        <textarea
-          id="excerpt"
-          className={styles.textarea}
-          value={excerpt}
-          onChange={(e) => setExcerpt(e.target.value)}
-          rows={4}
-          placeholder="Excerpt shown on the card"
-        />
-        <FitStatusIndicator field="excerpt" />
-      </section>
-
-      <section className={styles.section}>
-        <label className={styles.fieldLabel} htmlFor="scratchpad">
-          Scratchpad
-        </label>
+      <section className={styles.groupPrimary}>
+        <h3 className={styles.sectionLabel}>Article Source / Scratchpad</h3>
         <textarea
           ref={scratchpadRef}
           id="scratchpad"
-          className={styles.textarea}
+          className={styles.textareaScratchpad}
           value={scratchpad}
           onChange={(e) => {
             setScratchpad(e.target.value);
@@ -174,8 +230,8 @@ export function ContentWorkspace() {
           onSelect={syncScratchpadSelection}
           onMouseUp={syncScratchpadSelection}
           onKeyUp={syncScratchpadSelection}
-          rows={6}
-          placeholder="Paste raw article text here, then select passages to use as excerpt"
+          rows={8}
+          placeholder="Paste article text here, select a passage, then send it to the snippet"
         />
         <div className={styles.buttonRow}>
           <button
@@ -184,7 +240,7 @@ export function ContentWorkspace() {
             onClick={useSelectedAsExcerpt}
             disabled={!hasSelection}
           >
-            Use selected text as excerpt
+            Use selected as snippet
           </button>
           <button
             type="button"
@@ -192,7 +248,7 @@ export function ContentWorkspace() {
             onClick={appendSelectedToExcerpt}
             disabled={!hasSelection}
           >
-            Append selected text to excerpt
+            Append selected to snippet
           </button>
           <button
             type="button"
@@ -200,32 +256,61 @@ export function ContentWorkspace() {
             onClick={clearScratchpad}
             disabled={!scratchpad}
           >
-            Clear scratchpad
+            Clear
           </button>
         </div>
       </section>
 
-      <section className={styles.section}>
-        <label className={styles.fieldLabel} htmlFor="caption">
-          Caption (optional)
-        </label>
-        <textarea
-          id="caption"
-          className={styles.textarea}
-          value={caption}
-          onChange={(e) => setCaption(e.target.value)}
-          rows={3}
-          placeholder="Social caption — not shown on card export"
-        />
-        <button
-          type="button"
-          className={styles.secondaryButton}
-          onClick={handleCopyCaption}
-          disabled={!caption.trim()}
-        >
-          Copy caption
-        </button>
+      <section className={styles.groupHelper}>
+        <h3 className={styles.sectionLabel}>Reference</h3>
+
+        <div className={styles.fieldCompact}>
+          <label className={styles.sectionLabel} htmlFor="source-url">
+            Source URL
+          </label>
+          <input
+            id="source-url"
+            type="url"
+            className={styles.input}
+            value={sourceUrl}
+            onChange={(e) => setSourceUrl(e.target.value)}
+            placeholder="https://example.com/article"
+            spellCheck={false}
+          />
+          <button
+            type="button"
+            className={styles.secondaryButton}
+            onClick={handleOpenOriginal}
+            disabled={!urlIsValid}
+          >
+            Open Original Article
+          </button>
+        </div>
       </section>
+
+      <details className={styles.captionDetails}>
+        <summary className={styles.captionSummary}>
+          Post Caption (optional, not exported)
+        </summary>
+        <div className={styles.captionBody}>
+          <textarea
+            id="caption"
+            className={styles.textareaSecondary}
+            value={caption}
+            onChange={(e) => setCaption(e.target.value)}
+            rows={3}
+            placeholder="Social caption for posting — not shown on card export"
+          />
+          <button
+            type="button"
+            className={styles.secondaryButton}
+            onClick={handleCopyCaption}
+            disabled={!caption.trim()}
+          >
+            Copy caption
+          </button>
+        </div>
+      </details>
     </main>
   );
 }

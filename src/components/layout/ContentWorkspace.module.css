@@ -1,81 +1,270 @@
 .panel {
-  padding: 24px;
-  border-right: 1px solid var(--color-border);
+  flex: 1 1 0;
+  min-height: 0;
+  padding: 16px 20px 20px;
+  border-right: 1px solid var(--border-subtle);
+  background: var(--panel-bg);
+  overflow-x: hidden;
   overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
-.heading {
+.group,
+.groupCompact,
+.groupPrimary,
+.groupHelper {
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.groupCompact {
+  padding-bottom: 12px;
+}
+
+.groupPrimary {
+  padding-bottom: 16px;
+}
+
+.groupHelper {
+  margin-bottom: 14px;
+  padding: 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  background: var(--panel-bg-soft);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.groupLabel,
+.sectionLabel {
   margin: 0 0 8px;
-  font-size: 14px;
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--color-muted);
+  color: var(--text-muted);
 }
 
-.note {
-  margin: 0 0 24px;
-  font-size: 13px;
-  color: var(--color-muted);
-  line-height: 1.5;
+.fieldCompact .sectionLabel {
+  margin-bottom: 5px;
 }
 
-.section {
-  margin-bottom: 24px;
+.field {
+  margin-bottom: 0;
+}
+
+.fieldCompact {
+  margin-bottom: 12px;
+}
+
+.fieldCompact:last-child {
+  margin-bottom: 0;
 }
 
 .fieldLabel {
   display: block;
-  margin-bottom: 6px;
+  margin-bottom: 5px;
   font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.fieldHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 5px;
+  min-width: 0;
+}
+
+.fieldHeader .fieldLabelPrimary {
+  margin-bottom: 0;
+  flex-shrink: 0;
+}
+
+.fieldLabelPrimary {
+  composes: fieldLabel;
+  font-size: 13px;
   font-weight: 600;
-  letter-spacing: 0.06em;
+  color: var(--text-primary);
+}
+
+.groupCompactArticleImage {
+  composes: groupCompact;
+  padding-bottom: 8px;
+}
+
+.imageSectionBand {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  gap: 10px;
+}
+
+.imageSectionBandWithControls {
+  gap: 10px;
+}
+
+.imageSectionSpacer {
+  flex: 1 1 auto;
+  min-width: 24px;
+}
+
+.imageSectionLeft {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.imageSectionLabel {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--color-muted);
+  color: var(--text-muted);
+}
+
+.imageToolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .input,
 .textarea {
   display: block;
   width: 100%;
-  margin-bottom: 8px;
-  padding: 10px 12px;
-  border: 1px solid var(--color-border);
+  margin-bottom: 6px;
+  padding: 8px 10px;
+  border: 1px solid var(--border-subtle);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.03);
-  color: var(--color-text);
+  background: var(--panel-bg-soft);
+  color: var(--text-primary);
   font-size: 14px;
-  line-height: 1.5;
+  line-height: 1.45;
+}
+
+.input {
+  resize: none;
+  min-height: 38px;
+  background: var(--panel-bg-raised);
+  border-color: var(--border-strong);
+}
+
+.textarea {
   resize: vertical;
+}
+
+.textareaCompact {
+  min-height: 52px;
+  background: var(--panel-bg-raised);
+  border-color: var(--border-strong);
+}
+
+.textareaSubhead {
+  min-height: 38px;
+}
+
+.textareaScratchpad {
+  composes: textarea;
+  min-height: 168px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+  background: var(--panel-bg-raised);
+  border-color: var(--border-strong);
+}
+
+.textareaSecondary {
+  composes: textarea;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  background: var(--panel-bg);
+}
+
+.input:hover,
+.textarea:hover {
+  border-color: var(--border-strong);
 }
 
 .input:focus,
 .textarea:focus {
-  outline: 2px solid rgba(255, 24, 23, 0.45);
+  outline: 2px solid var(--accent);
   outline-offset: 1px;
+  border-color: var(--accent);
 }
 
 .buttonRow {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
 }
 
 .secondaryButton {
-  padding: 8px 12px;
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.04);
-  color: var(--color-text);
-  font-size: 13px;
+  min-height: 30px;
+  padding: 6px 10px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  background: var(--panel-bg-raised);
+  color: var(--text-primary);
+  font-size: 12px;
   font-weight: 500;
 }
 
 .secondaryButton:disabled {
   opacity: 0.45;
-  cursor: not-allowed;
 }
 
 .secondaryButton:not(:disabled):hover {
-  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--border-strong);
+  background: var(--panel-bg-soft);
+}
+
+.secondaryButton:not(:disabled):active {
+  background: var(--accent-soft);
+}
+
+.captionDetails {
+  margin-top: 4px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  background: var(--panel-bg-soft);
+}
+
+.captionSummary {
+  composes: sectionLabel;
+  cursor: pointer;
+  margin: 0;
+  list-style: none;
+}
+
+.captionSummary::-webkit-details-marker {
+  display: none;
+}
+
+.captionSummary::before {
+  content: '▸ ';
+  display: inline-block;
+  margin-right: 4px;
+  transition: transform 0.15s ease;
+}
+
+.captionDetails[open] .captionSummary::before {
+  transform: rotate(90deg);
+}
+
+.captionBody {
+  margin-top: 10px;
+}
+
+.captionBody .textareaSecondary {
+  margin-bottom: 8px;
 }

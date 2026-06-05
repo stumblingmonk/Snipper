@@ -1,30 +1,38 @@
-import { getStandardArticleLayout } from '@/constants/standardArticleLayouts';
-import {
-  fitStatusLabel,
-  preferredFontSize,
-  type FitStatus,
-} from '@/constants/textFit';
+import type { FitStatus } from '@/constants/textFit';
 import { useSnipperStore } from '@/store/snipperStore';
 import styles from './FitStatusIndicator.module.css';
 
-interface FitStatusIndicatorProps {
+interface InlineFitStatusProps {
   field: 'headline' | 'excerpt';
+}
+
+function compactStatusLabel(status: FitStatus): string {
+  switch (status) {
+    case 'empty':
+      return 'Empty';
+    case 'fits':
+      return 'Fits';
+    case 'tight':
+      return 'Tight';
+    case 'too-long':
+      return 'Too long';
+  }
 }
 
 function statusClassName(status: FitStatus): string {
   switch (status) {
+    case 'empty':
+      return styles.empty;
     case 'tight':
       return styles.tight;
     case 'too-long':
       return styles.tooLong;
     default:
-      return styles.normal;
+      return styles.fits;
   }
 }
 
-export function FitStatusIndicator({ field }: FitStatusIndicatorProps) {
-  const formatKey = useSnipperStore((s) => s.format);
-  const layout = getStandardArticleLayout(formatKey);
+export function InlineFitStatus({ field }: InlineFitStatusProps) {
   const status = useSnipperStore((s) =>
     field === 'headline' ? s.headlineFitStatus : s.excerptFitStatus,
   );
@@ -36,22 +44,17 @@ export function FitStatusIndicator({ field }: FitStatusIndicatorProps) {
   const autoFit = useSnipperStore((s) =>
     field === 'headline' ? s.headlineAutoFit : s.excerptAutoFit,
   );
-  const step = useSnipperStore((s) =>
-    field === 'headline' ? s.headlineSizeStep : s.excerptSizeStep,
-  );
-  const bounds =
-    field === 'headline' ? layout.headlineTypo : layout.excerptTypo;
-  const preferred = preferredFontSize(step, bounds);
+
+  const modeLabel = autoFit ? 'Auto-fit' : 'Manual';
 
   return (
-    <p className={[styles.indicator, statusClassName(status)].join(' ')}>
-      <span>{fitStatusLabel(status)}</span>
-      {status !== 'empty' ? (
-        <span className={styles.meta}>
-          {autoFit ? 'Auto-Fit' : 'Manual'} · resolved {resolvedSize}px
-          {autoFit ? '' : ` · preferred ${preferred}px`}
-        </span>
-      ) : null}
-    </p>
+    <span
+      className={[styles.inlineStatus, statusClassName(status)].join(' ')}
+      aria-live="polite"
+    >
+      {status === 'empty'
+        ? compactStatusLabel(status)
+        : `${compactStatusLabel(status)} · ${modeLabel} · ${resolvedSize}px`}
+    </span>
   );
 }

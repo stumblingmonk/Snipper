@@ -174,10 +174,12 @@ export const useSnipperStore = create<SnipperState>((set, get) => ({
   adjustHeadlineSizeStep: (delta) =>
     set((state) => ({
       headlineSizeStep: clampTextSizeStep(state.headlineSizeStep + delta),
+      headlineAutoFit: false,
     })),
   adjustExcerptSizeStep: (delta) =>
     set((state) => ({
       excerptSizeStep: clampTextSizeStep(state.excerptSizeStep + delta),
+      excerptAutoFit: false,
     })),
   setHeadlineAutoFit: (headlineAutoFit) => set({ headlineAutoFit }),
   setExcerptAutoFit: (excerptAutoFit) => set({ excerptAutoFit }),

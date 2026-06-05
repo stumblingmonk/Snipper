@@ -1,47 +1,93 @@
 .section {
-  margin-bottom: 24px;
+  margin-bottom: 18px;
 }
 
 .label {
-  margin: 0 0 10px;
-  font-size: 12px;
+  margin: 0 0 8px;
+  font-size: 11px;
   font-weight: 600;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--color-muted);
+  color: var(--text-muted);
 }
 
 .optionList {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .option {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 10px 12px;
-  border: 1px solid var(--color-border);
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--border-subtle);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--panel-bg-soft);
   cursor: pointer;
 }
 
+.option:hover {
+  border-color: var(--border-strong);
+}
+
 .optionSelected {
-  border-color: var(--color-accent);
-  box-shadow: inset 0 0 0 1px var(--color-accent);
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.optionSelected .formatIcon {
+  border-color: var(--accent);
+  background: rgba(95, 127, 159, 0.22);
+}
+
+.formatIcon {
+  flex-shrink: 0;
+  display: block;
+  border: 1px solid var(--border-strong);
+  border-radius: 2px;
+  background: var(--panel-bg-raised);
+}
+
+.formatIconSquare {
+  width: 14px;
+  height: 14px;
+}
+
+.formatIconPortrait {
+  width: 11px;
+  height: 14px;
+}
+
+.formatIconStory {
+  width: 9px;
+  height: 16px;
+}
+
+.formatIconLinkedin {
+  width: 18px;
+  height: 10px;
+}
+
+.optionContent {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
 }
 
 .optionLabel {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
-  color: var(--color-text);
+  color: var(--text-primary);
 }
 
 .optionMeta {
-  font-size: 11px;
-  color: var(--color-muted);
+  font-size: 10px;
+  color: var(--text-muted);
 }
 
 .srOnly {
