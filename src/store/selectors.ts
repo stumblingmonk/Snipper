@@ -6,8 +6,16 @@ import { getBuiltinSourceLogoUrl } from '@/constants/builtinSourceLogos';
 import type { FormatKey } from '@/constants/formats';
 import type { SnipperState } from '@/store/snipperStore';
 
+export function resolveSourceNameForCard(state: SnipperState): string {
+  if (!state.showSource) {
+    return '';
+  }
+
+  return state.sourceName;
+}
+
 export function resolveSourceLogoUrl(state: SnipperState): string | null {
-  if (state.sourceLogoHidden) {
+  if (!state.showSource || state.sourceLogoHidden) {
     return null;
   }
 

@@ -15,16 +15,38 @@ const logoModules = import.meta.glob<string>(
   },
 );
 
+const ACRONYM_WORDS: Record<string, string> = {
+  abc: 'ABC',
+  ap: 'AP',
+  bbc: 'BBC',
+  cbs: 'CBS',
+  cnbc: 'CNBC',
+  cnn: 'CNN',
+  espn: 'ESPN',
+  nbc: 'NBC',
+  npr: 'NPR',
+  usa: 'USA',
+};
+
 function filenameFromPath(path: string): string {
   const segment = path.split('/').pop() ?? path;
   return segment.replace(/\.[^.]+$/, '');
+}
+
+function formatLogoWord(word: string): string {
+  const lower = word.toLowerCase();
+  if (ACRONYM_WORDS[lower]) {
+    return ACRONYM_WORDS[lower];
+  }
+
+  return word.charAt(0).toUpperCase() + word.slice(1);
 }
 
 function filenameToLabel(id: string): string {
   return id
     .split('-')
     .filter(Boolean)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .map(formatLogoWord)
     .join(' ');
 }
 
@@ -51,4 +73,24 @@ export function getDefaultBuiltinSourceLogoId(): string | null {
 
 export function getBuiltinSourceLogoUrl(id: string): string | null {
   return BUILTIN_SOURCE_LOGOS.find((logo) => logo.id === id)?.url ?? null;
+}
+
+export function getBuiltinSourceLogoLabel(id: string): string | null {
+  return BUILTIN_SOURCE_LOGOS.find((logo) => logo.id === id)?.label ?? null;
+}
+
+export function filterBuiltinSourceLogos(
+  logos: BuiltinSourceLogo[],
+  query: string,
+): BuiltinSourceLogo[] {
+  const normalized = query.trim().toLowerCase();
+  if (!normalized) {
+    return logos;
+  }
+
+  return logos.filter(
+    (logo) =>
+      logo.label.toLowerCase().includes(normalized) ||
+      logo.id.toLowerCase().includes(normalized),
+  );
 }

@@ -1,24 +1,35 @@
-import { useRef } from 'react';
-import { BUILTIN_SOURCE_LOGOS } from '@/constants/builtinSourceLogos';
+import { useMemo, useRef } from 'react';
+import {
+  BUILTIN_SOURCE_LOGOS,
+  filterBuiltinSourceLogos,
+} from '@/constants/builtinSourceLogos';
 import { useSnipperStore } from '@/store/snipperStore';
 import styles from './SourceLogoPicker.module.css';
 
 const LOGO_ACCEPT =
   '.svg,.png,.jpg,.jpeg,.webp,.avif,.gif,image/svg+xml,image/png,image/jpeg,image/webp,image/avif,image/gif';
 
-export function SourceLogoPicker() {
+interface SourceLogoPickerProps {
+  searchQuery: string;
+}
+
+export function SourceLogoPicker({ searchQuery }: SourceLogoPickerProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const selectedBuiltinLogoId = useSnipperStore((s) => s.selectedBuiltinLogoId);
   const sourceLogoObjectUrl = useSnipperStore((s) => s.sourceLogoObjectUrl);
-  const sourceLogoHidden = useSnipperStore((s) => s.sourceLogoHidden);
+  const showSource = useSnipperStore((s) => s.showSource);
   const logoUploadError = useSnipperStore((s) => s.logoUploadError);
 
   const selectBuiltinSourceLogo = useSnipperStore((s) => s.selectBuiltinSourceLogo);
   const chooseOtherSourceLogo = useSnipperStore((s) => s.chooseOtherSourceLogo);
-  const clearSourceLogo = useSnipperStore((s) => s.clearSourceLogo);
+  const setShowSource = useSnipperStore((s) => s.setShowSource);
 
   const hasCustomLogo = Boolean(sourceLogoObjectUrl);
+  const filteredLogos = useMemo(
+    () => filterBuiltinSourceLogos(BUILTIN_SOURCE_LOGOS, searchQuery),
+    [searchQuery],
+  );
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -30,40 +41,43 @@ export function SourceLogoPicker() {
 
   return (
     <section className={styles.section}>
-      <div className={styles.gallery} role="radiogroup" aria-label="Built-in source logos">
-        {BUILTIN_SOURCE_LOGOS.map((logo) => {
-          const isSelected =
-            !sourceLogoHidden &&
-            !hasCustomLogo &&
-            selectedBuiltinLogoId === logo.id;
+      <div className={styles.galleryPanel}>
+        {filteredLogos.length === 0 ? (
+          <p className={styles.emptyState}>No matching logos</p>
+        ) : (
+          <div className={styles.gallery} role="radiogroup" aria-label="Built-in source logos">
+            {filteredLogos.map((logo) => {
+              const isSelected =
+                !hasCustomLogo && selectedBuiltinLogoId === logo.id;
 
-          return (
-            <button
-              key={logo.id}
-              type="button"
-              className={[
-                styles.galleryButton,
-                isSelected ? styles.galleryButtonSelected : '',
-              ]
-                .filter(Boolean)
-                .join(' ')}
-              title={logo.label}
-              aria-label={logo.label}
-              aria-pressed={isSelected}
-              onClick={() => selectBuiltinSourceLogo(logo.id)}
-            >
-              <img
-                className={styles.galleryLogo}
-                src={logo.url}
-                alt=""
-                draggable={false}
-              />
-            </button>
-          );
-        })}
+              return (
+                <button
+                  key={logo.id}
+                  type="button"
+                  className={[
+                    styles.galleryButton,
+                    isSelected ? styles.galleryButtonSelected : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' ')}
+                  title={logo.label}
+                  aria-pressed={isSelected}
+                  onClick={() => selectBuiltinSourceLogo(logo.id)}
+                >
+                  <img
+                    className={styles.galleryLogo}
+                    src={logo.url}
+                    alt=""
+                    draggable={false}
+                  />
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
 
-      <div className={styles.buttonRow}>
+      <div className={styles.actionRow}>
         <input
           ref={fileInputRef}
           type="file"
@@ -75,29 +89,25 @@ export function SourceLogoPicker() {
           type="button"
           className={[
             styles.secondaryButton,
-            hasCustomLogo && !sourceLogoHidden ? styles.secondaryButtonSelected : '',
+            hasCustomLogo ? styles.secondaryButtonSelected : '',
           ]
             .filter(Boolean)
             .join(' ')}
           onClick={() => fileInputRef.current?.click()}
         >
-          Choose Other Logo
+          Other source
         </button>
-        <button
-          type="button"
-          className={styles.secondaryButton}
-          onClick={clearSourceLogo}
-          disabled={sourceLogoHidden}
-        >
-          Clear Logo
-        </button>
+
+        <label className={styles.visibilityToggle}>
+          <input
+            type="checkbox"
+            className={styles.visibilityCheckbox}
+            checked={showSource}
+            onChange={(event) => setShowSource(event.target.checked)}
+          />
+          <span className={styles.visibilityLabel}>Show source</span>
+        </label>
       </div>
-
-      {hasCustomLogo && !sourceLogoHidden ? (
-        <p className={styles.statusText}>Custom logo selected.</p>
-      ) : null}
-
-      <p className={styles.helpText}>Choose SVG, PNG, JPG, WEBP, AVIF, or GIF.</p>
 
       {logoUploadError ? (
         <p className={styles.error} role="alert">

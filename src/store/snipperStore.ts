@@ -6,6 +6,7 @@ import {
 } from '@/constants/imageSettings';
 import {
   getDefaultBuiltinSourceLogoId,
+  getBuiltinSourceLogoLabel,
 } from '@/constants/builtinSourceLogos';
 import { appendWithSpacing } from '@/utils/appendText';
 import {
@@ -65,6 +66,7 @@ export interface SnipperState {
   selectedBuiltinLogoId: string | null;
   sourceLogoObjectUrl: string | null;
   sourceLogoHidden: boolean;
+  showSource: boolean;
   articleImageObjectUrl: string | null;
   uploadedArticleImageObjectUrl: string | null;
   flattenedCropUrl: string | null;
@@ -100,6 +102,7 @@ export interface SnipperState {
   ) => void;
   setSourceUrl: (sourceUrl: string) => void;
   setSourceName: (sourceName: string) => void;
+  setShowSource: (showSource: boolean) => void;
   setHeadline: (headline: string) => void;
   setSubhead: (subhead: string) => void;
   setExcerpt: (excerpt: string) => void;
@@ -140,6 +143,7 @@ export const useSnipperStore = create<SnipperState>((set, get) => ({
   selectedBuiltinLogoId: getDefaultBuiltinSourceLogoId(),
   sourceLogoObjectUrl: null,
   sourceLogoHidden: false,
+  showSource: true,
   articleImageObjectUrl: DEFAULT_CONTENT.articleImageUrl,
   uploadedArticleImageObjectUrl: null,
   flattenedCropUrl: null,
@@ -209,6 +213,7 @@ export const useSnipperStore = create<SnipperState>((set, get) => ({
     set({ exportStatus, exportError, lastExportSize }),
   setSourceUrl: (sourceUrl) => set({ sourceUrl }),
   setSourceName: (sourceName) => set({ sourceName }),
+  setShowSource: (showSource) => set({ showSource }),
   setHeadline: (headline) => set({ headline }),
   setSubhead: (subhead) => set({ subhead }),
   setExcerpt: (excerpt) => set({ excerpt }),
@@ -219,11 +224,14 @@ export const useSnipperStore = create<SnipperState>((set, get) => ({
     const { sourceLogoObjectUrl } = get();
     revokeIfBlob(sourceLogoObjectUrl);
 
+    const label = getBuiltinSourceLogoLabel(logoId);
+
     set({
       selectedBuiltinLogoId: logoId,
       sourceLogoObjectUrl: null,
       sourceLogoHidden: false,
       logoUploadError: null,
+      ...(label ? { sourceName: label } : {}),
     });
   },
   chooseOtherSourceLogo: (file) => {

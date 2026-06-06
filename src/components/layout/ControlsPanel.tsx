@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { FormatPicker } from '@/components/layout/FormatPicker';
 import { SourceLogoPicker } from '@/components/layout/SourceLogoPicker';
 import { useSnipperStore } from '@/store/snipperStore';
@@ -19,6 +20,7 @@ export function ControlsPanel({
   backgroundFallbackNote,
 }: ControlsPanelProps) {
   const isExporting = exportStatus === 'exporting';
+  const [searchQuery, setSearchQuery] = useState('');
   const sourceName = useSnipperStore((s) => s.sourceName);
   const setSourceName = useSnipperStore((s) => s.setSourceName);
 
@@ -39,23 +41,34 @@ export function ControlsPanel({
           </p>
         ) : null}
 
-        <section className={styles.section}>
-          <h3 className={styles.sectionLabel}>Publication / Source</h3>
+        <section className={styles.newsSourceSection}>
+          <div className={styles.newsSourceHeader}>
+            <h3 className={styles.sectionLabel}>News Source</h3>
+            <label className={styles.visuallyHidden} htmlFor="source-logo-search">
+              Search
+            </label>
+            <input
+              id="source-logo-search"
+              type="search"
+              className={styles.headerSearch}
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Search"
+              spellCheck={false}
+            />
+          </div>
 
-          <label className={styles.sectionLabel} htmlFor="source-name">
-            Publication Name
-          </label>
           <input
             id="source-name"
             type="text"
-            className={styles.input}
+            className={styles.nameInput}
             value={sourceName}
             onChange={(e) => setSourceName(e.target.value)}
-            placeholder="Shown in card footer"
+            placeholder="Publication name"
+            aria-label="Publication name"
           />
 
-          <label className={styles.sectionLabel}>Source Logo</label>
-          <SourceLogoPicker />
+          <SourceLogoPicker searchQuery={searchQuery} />
         </section>
       </div>
 

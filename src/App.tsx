@@ -3,7 +3,7 @@ import { FORMATS, getFormatExportFilename } from '@/constants/formats';
 import { computeArticleZones, getStandardArticleLayout } from '@/constants/standardArticleLayouts';
 import { exportCardPng } from '@/utils/exportCard';
 import { flattenImage } from '@/utils/flattenImage';
-import { resolveFormatBackground, resolveSourceLogoUrl } from '@/store/selectors';
+import { resolveFormatBackground, resolveSourceLogoUrl, resolveSourceNameForCard } from '@/store/selectors';
 import { useSnipperStore } from '@/store/snipperStore';
 import { PreviewCardWithTextFit } from '@/components/cards/PreviewCardWithTextFit';
 import { StandardArticleCard } from '@/components/cards/StandardArticleCard';
@@ -36,7 +36,7 @@ export default function App() {
   const exportStatus = useSnipperStore((s) => s.exportStatus);
   const exportError = useSnipperStore((s) => s.exportError);
   const lastExportSize = useSnipperStore((s) => s.lastExportSize);
-  const sourceName = useSnipperStore((s) => s.sourceName);
+  const sourceName = useSnipperStore(resolveSourceNameForCard);
   const headline = useSnipperStore((s) => s.headline);
   const subhead = useSnipperStore((s) => s.subhead);
   const excerpt = useSnipperStore((s) => s.excerpt);

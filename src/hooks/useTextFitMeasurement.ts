@@ -4,7 +4,7 @@ import type { TextSizeStep } from '@/constants/textFit';
 import { preferredFontSize } from '@/constants/textFit';
 import { getStandardArticleLayout } from '@/constants/standardArticleLayouts';
 import { measureTextFit } from '@/utils/textFitMeasure';
-import { resolveSourceLogoUrl } from '@/store/selectors';
+import { resolveSourceLogoUrl, resolveSourceNameForCard } from '@/store/selectors';
 import { useSnipperStore } from '@/store/snipperStore';
 
 interface UseTextFitMeasurementOptions {
@@ -36,7 +36,7 @@ export function useTextFitMeasurement({
 }: UseTextFitMeasurementOptions): boolean {
   const setTextFitResult = useSnipperStore((s) => s.setTextFitResult);
   const logoUrl = useSnipperStore(resolveSourceLogoUrl);
-  const sourceName = useSnipperStore((s) => s.sourceName);
+  const sourceName = useSnipperStore(resolveSourceNameForCard);
   const hasLogo = Boolean(logoUrl);
   const [fontsReady, setFontsReady] = useState(
     () => typeof document !== 'undefined' && document.fonts.status === 'loaded',

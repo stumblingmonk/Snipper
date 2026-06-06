@@ -1,7 +1,7 @@
 import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { FORMATS } from '@/constants/formats';
 import { computeArticleZones, getStandardArticleLayout } from '@/constants/standardArticleLayouts';
-import { resolveSourceLogoUrl } from '@/store/selectors';
+import { resolveSourceLogoUrl, resolveSourceNameForCard } from '@/store/selectors';
 import { useSnipperStore } from '@/store/snipperStore';
 import { computeExcerptOverflowSplitIndex } from '@/utils/excerptOverflowPreview';
 import styles from './SnippetEditor.module.css';
@@ -31,7 +31,7 @@ export function SnippetEditor({
     (s) => s.excerptResolvedFontSize,
   );
   const subhead = useSnipperStore((s) => s.subhead);
-  const sourceName = useSnipperStore((s) => s.sourceName);
+  const sourceName = useSnipperStore(resolveSourceNameForCard);
   const imageMode = useSnipperStore((s) => s.imageMode);
   const logoUrl = useSnipperStore(resolveSourceLogoUrl);
   const setExcerpt = useSnipperStore((s) => s.setExcerpt);
