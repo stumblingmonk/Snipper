@@ -184,9 +184,9 @@
   flex-shrink: 0;
   width: var(--sa-obb-logo-width, 48px);
   height: auto;
-  max-height: calc(var(--sa-obb-logo-width, 48px) * 0.55);
+  max-height: calc(var(--sa-obb-logo-width, 48px) * 0.58);
   object-fit: contain;
-  opacity: 0.45;
+  opacity: 0.52;
 }
 
 .splitLayout {
