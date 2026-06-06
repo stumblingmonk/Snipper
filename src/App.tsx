@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
-import { FORMATS, getFormatExportFilename } from '@/constants/formats';
+import { FORMATS, getFormatExportFilename, type FormatKey } from '@/constants/formats';
 import { computeArticleZones, getStandardArticleLayout } from '@/constants/standardArticleLayouts';
 import { exportCardPng } from '@/utils/exportCard';
 import { flattenImage } from '@/utils/flattenImage';
@@ -12,18 +12,25 @@ import { ContentWorkspace } from '@/components/layout/ContentWorkspace';
 import { PreviewPanel } from '@/components/layout/PreviewPanel';
 import styles from './App.module.css';
 
+function isFormatKey(value: string): value is FormatKey {
+  return value in FORMATS;
+}
+
 export default function App() {
   const exportRef = useRef<HTMLDivElement>(null);
 
-  const formatKey = useSnipperStore((s) => s.format);
-  const format = FORMATS[formatKey];
+  const storeFormatKey = useSnipperStore((s) => s.format);
+  const format = isFormatKey(storeFormatKey) ? FORMATS[storeFormatKey] : FORMATS.story;
   const layout = useMemo(
-    () => getStandardArticleLayout(formatKey),
-    [formatKey],
+    () => getStandardArticleLayout(format.key),
+    [format.key],
   );
-  const background = useMemo(
-    () => resolveFormatBackground(formatKey),
-    [formatKey],
+  const backgroundUrl = useSnipperStore((s) => resolveFormatBackground(s).url);
+  const backgroundFallbackColor = useSnipperStore(
+    (s) => resolveFormatBackground(s).fallbackColor,
+  );
+  const backgroundFallbackNote = useSnipperStore(
+    (s) => resolveFormatBackground(s).fallbackNote,
   );
 
   const logoUrl = useSnipperStore(resolveSourceLogoUrl);
@@ -58,9 +65,9 @@ export default function App() {
         showImage,
         hasSubhead: Boolean(subhead.trim()),
         hasLogo: Boolean(logoUrl),
-        hasFooter: Boolean(sourceName),
+        hasFooter: true,
       }).imageFrame,
-    [layout, format, showImage, subhead, logoUrl, sourceName],
+    [layout, format, showImage, subhead, logoUrl],
   );
 
   useEffect(() => {
@@ -116,14 +123,14 @@ export default function App() {
         node,
         width: format.width,
         height: format.height,
-        filename: getFormatExportFilename(formatKey),
+        filename: getFormatExportFilename(format.key),
       });
       setExportStatus('done', null, size);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Export failed';
       setExportStatus('error', message);
     }
-  }, [format.width, format.height, formatKey, setExportStatus]);
+  }, [format.width, format.height, format.key, setExportStatus]);
 
   const sharedCardProps = {
     format,
@@ -133,8 +140,8 @@ export default function App() {
     subhead,
     excerpt,
     logoUrl,
-    backgroundUrl: background.url,
-    backgroundFallbackColor: background.fallbackColor,
+    backgroundUrl,
+    backgroundFallbackColor,
     imageUrl: cardImageUrl,
     showImage: imageMode !== 'none' && Boolean(cardImageUrl),
   };
@@ -148,7 +155,7 @@ export default function App() {
             exportStatus={exportStatus}
             exportError={exportError}
             lastExportSize={lastExportSize}
-            backgroundFallbackNote={background.fallbackNote}
+            backgroundFallbackNote={backgroundFallbackNote}
           />
         </div>
 

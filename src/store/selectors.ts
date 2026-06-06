@@ -2,9 +2,17 @@ import {
   DEFAULT_FORMAT_BACKGROUND,
   getStandardArticleLayout,
 } from '@/constants/standardArticleLayouts';
+import {
+  DEFAULT_BACKGROUND_PACK_ID,
+  getBackgroundPack,
+} from '@/constants/backgroundPacks';
 import { getBuiltinSourceLogoUrl } from '@/constants/builtinSourceLogos';
-import type { FormatKey } from '@/constants/formats';
+import { FORMATS, type FormatKey } from '@/constants/formats';
 import type { SnipperState } from '@/store/snipperStore';
+
+function resolveFormatKey(format: string): FormatKey {
+  return format in FORMATS ? (format as FormatKey) : 'story';
+}
 
 export function resolveSourceNameForCard(state: SnipperState): string {
   if (!state.showSource) {
@@ -37,14 +45,43 @@ export interface ResolvedFormatBackground {
   fallbackNote: string | null;
 }
 
-export function resolveFormatBackground(
-  formatKey: FormatKey,
-): ResolvedFormatBackground {
+function legacyBackgroundUrl(formatKey: FormatKey): string {
   const layout = getStandardArticleLayout(formatKey);
+  return layout.backgroundAsset ?? DEFAULT_FORMAT_BACKGROUND;
+}
+
+export function resolveFormatBackground(
+  state: SnipperState,
+): ResolvedFormatBackground {
+  const formatKey = resolveFormatKey(state.format);
+  const layout = getStandardArticleLayout(formatKey);
+  const fallbackColor = layout.fallbackBackgroundColor;
+  const legacyUrl = legacyBackgroundUrl(formatKey);
+
+  const packId = state.selectedBackgroundPackId || DEFAULT_BACKGROUND_PACK_ID;
+  const pack = getBackgroundPack(packId);
+  if (!pack) {
+    return {
+      url: legacyUrl,
+      fallbackColor,
+      usingFallback: true,
+      fallbackNote: `Background pack "${packId}" is unavailable. Using fallback color.`,
+    };
+  }
+
+  const url = pack.formats[formatKey];
+  if (!url) {
+    return {
+      url: legacyUrl,
+      fallbackColor,
+      usingFallback: true,
+      fallbackNote: `No ${formatKey} background in "${pack.name}". Using fallback color.`,
+    };
+  }
 
   return {
-    url: layout.backgroundAsset ?? DEFAULT_FORMAT_BACKGROUND,
-    fallbackColor: layout.fallbackBackgroundColor,
+    url,
+    fallbackColor,
     usingFallback: false,
     fallbackNote: null,
   };

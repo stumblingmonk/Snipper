@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { BackgroundPicker } from '@/components/layout/BackgroundPicker';
 import { FormatPicker } from '@/components/layout/FormatPicker';
 import { SourceLogoPicker } from '@/components/layout/SourceLogoPicker';
 import { useSnipperStore } from '@/store/snipperStore';
@@ -29,11 +30,13 @@ export function ControlsPanel({
       <header className={styles.brandHeader}>
         <p className={styles.appTitle}>SNIPPER</p>
         <p className={styles.byline}>BY MARK BRINN FOR OBB</p>
-        <span className={styles.phaseBadge}>Phase 7B — Operator UI Cleanup</span>
+        <span className={styles.phaseBadge}>Phase 7C — Background Packs + OBB Mark</span>
       </header>
 
       <div className={styles.panelBody}>
         <FormatPicker />
+
+        <BackgroundPicker />
 
         {backgroundFallbackNote ? (
           <p className={styles.note} role="status">

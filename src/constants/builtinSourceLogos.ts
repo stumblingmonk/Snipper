@@ -50,6 +50,9 @@ function filenameToLabel(id: string): string {
     .join(' ');
 }
 
+/** Built-in news source logos only — brand assets like OBB are excluded. */
+const EXCLUDED_SOURCE_LOGO_IDS = new Set(['obb']);
+
 export const BUILTIN_SOURCE_LOGOS: BuiltinSourceLogo[] = Object.entries(logoModules)
   .map(([path, url]) => {
     const id = filenameFromPath(path);
@@ -59,6 +62,7 @@ export const BUILTIN_SOURCE_LOGOS: BuiltinSourceLogo[] = Object.entries(logoModu
       url,
     };
   })
+  .filter((logo) => !EXCLUDED_SOURCE_LOGO_IDS.has(logo.id.toLowerCase()))
   .sort((a, b) => a.label.localeCompare(b.label));
 
 export function getDefaultBuiltinSourceLogoId(): string | null {

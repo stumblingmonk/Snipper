@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import type { CSSProperties, RefObject } from 'react';
 import type { FormatSpec } from '@/constants/formats';
+import { OBB_BRAND_LOGO_URL, OBB_FOOTER_LOGO_WIDTH } from '@/constants/brandAssets';
 import type { StandardArticleLayout } from '@/constants/standardArticleLayouts';
 import {
   computeArticleZones,
@@ -30,6 +31,7 @@ export interface StandardArticleCardProps {
 
 function layoutCssVariables(
   layout: StandardArticleLayout,
+  format: FormatSpec,
   showImage: boolean,
   zones: ReturnType<typeof computeArticleZones>,
 ): CSSProperties {
@@ -61,6 +63,7 @@ function layoutCssVariables(
     '--sa-footer-padding-top': `${layout.footer.paddingTop}px`,
     '--sa-footer-padding-bottom': `${layout.footer.paddingBottom}px`,
     '--sa-footer-font-size': `${layout.footer.fontSize}px`,
+    '--sa-obb-logo-width': `${OBB_FOOTER_LOGO_WIDTH[format.key] ?? 48}px`,
     '--sa-fallback-bg': layout.fallbackBackgroundColor,
     '--sa-split-image-width': split ? `${zones.imageFrame.width}px` : '0px',
   } as CSSProperties;
@@ -158,11 +161,19 @@ function ExcerptBlock({
 }
 
 function FooterBlock({ sourceName }: { sourceName: string }) {
-  if (!sourceName) return null;
-
   return (
     <footer className={styles.footer}>
-      <span className={styles.footerSource}>{sourceName}</span>
+      {sourceName ? (
+        <span className={styles.footerSource}>{sourceName}</span>
+      ) : (
+        <span className={styles.footerSourceSpacer} aria-hidden="true" />
+      )}
+      <img
+        className={styles.footerObbLogo}
+        src={OBB_BRAND_LOGO_URL}
+        alt=""
+        draggable={false}
+      />
     </footer>
   );
 }
@@ -201,7 +212,7 @@ export function StandardArticleCard({
 }: StandardArticleCardProps) {
   const hasSubhead = Boolean(subhead.trim());
   const hasLogo = Boolean(logoUrl);
-  const hasFooter = Boolean(sourceName);
+  const hasFooter = true;
 
   const zones = useMemo(
     () =>
@@ -284,7 +295,7 @@ export function StandardArticleCard({
         height: format.height,
         backgroundImage: backgroundUrl ? `url(${backgroundUrl})` : undefined,
         backgroundColor: backgroundFallbackColor,
-        ...layoutCssVariables(layout, showImage, zones),
+        ...layoutCssVariables(layout, format, showImage, zones),
       }}
       aria-label="Social card preview"
     >

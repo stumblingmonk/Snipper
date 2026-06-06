@@ -11,7 +11,7 @@ import {
   getStandardArticleLayout,
 } from '@/constants/standardArticleLayouts';
 import { useTextOverflowSplitIndex } from '@/hooks/useTextOverflowSplitIndex';
-import { resolveSourceLogoUrl, resolveSourceNameForCard } from '@/store/selectors';
+import { resolveSourceLogoUrl } from '@/store/selectors';
 import {
   selectHasScratchpadSelection,
   useSnipperStore,
@@ -33,7 +33,6 @@ export function ContentWorkspace() {
   const headlineResolvedFontSize = useSnipperStore(
     (s) => s.headlineResolvedFontSize,
   );
-  const sourceName = useSnipperStore(resolveSourceNameForCard);
   const logoUrl = useSnipperStore(resolveSourceLogoUrl);
   const hasSelection = useSnipperStore(selectHasScratchpadSelection);
 
@@ -61,9 +60,9 @@ export function ContentWorkspace() {
         showImage,
         hasSubhead: Boolean(subhead.trim()),
         hasLogo: Boolean(logoUrl),
-        hasFooter: Boolean(sourceName),
+        hasFooter: true,
       }),
-    [layout, format, showImage, subhead, logoUrl, sourceName],
+    [layout, format, showImage, subhead, logoUrl],
   );
 
   const headlineMeasureStyle = useMemo(

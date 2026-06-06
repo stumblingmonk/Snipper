@@ -153,6 +153,10 @@
 }
 
 .footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   padding: var(--sa-footer-padding-top, 10px) var(--sa-zone-margin-x, 48px)
     var(--sa-footer-padding-bottom, 14px);
   border-top: 1px solid rgba(20, 24, 32, 0.06);
@@ -160,7 +164,8 @@
 }
 
 .footerSource {
-  display: block;
+  flex: 1;
+  min-width: 0;
   font-family: var(--font-body);
   font-size: var(--sa-footer-font-size, 16px);
   font-weight: 500;
@@ -168,6 +173,20 @@
   text-transform: uppercase;
   color: #7a8294;
   text-align: left;
+}
+
+.footerSourceSpacer {
+  flex: 1;
+  min-width: 0;
+}
+
+.footerObbLogo {
+  flex-shrink: 0;
+  width: var(--sa-obb-logo-width, 48px);
+  height: auto;
+  max-height: calc(var(--sa-obb-logo-width, 48px) * 0.55);
+  object-fit: contain;
+  opacity: 0.45;
 }
 
 .splitLayout {
