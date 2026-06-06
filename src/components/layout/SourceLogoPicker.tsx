@@ -1,142 +1,103 @@
 import { useRef } from 'react';
-import {
-  BUILTIN_SOURCE_LOGOS,
-  type SourceLogoSelectionId,
-} from '@/constants/sourceLogos';
+import { BUILTIN_SOURCE_LOGOS } from '@/constants/builtinSourceLogos';
 import { useSnipperStore } from '@/store/snipperStore';
 import styles from './SourceLogoPicker.module.css';
+
+const LOGO_ACCEPT =
+  '.svg,.png,.jpg,.jpeg,.webp,.avif,.gif,image/svg+xml,image/png,image/jpeg,image/webp,image/avif,image/gif';
 
 export function SourceLogoPicker() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const selectedSourceLogoId = useSnipperStore((s) => s.selectedSourceLogoId);
-  const customLogoObjectUrl = useSnipperStore((s) => s.customLogoObjectUrl);
+  const selectedBuiltinLogoId = useSnipperStore((s) => s.selectedBuiltinLogoId);
+  const sourceLogoObjectUrl = useSnipperStore((s) => s.sourceLogoObjectUrl);
+  const sourceLogoHidden = useSnipperStore((s) => s.sourceLogoHidden);
   const logoUploadError = useSnipperStore((s) => s.logoUploadError);
 
-  const setSelectedSourceLogoId = useSnipperStore((s) => s.setSelectedSourceLogoId);
-  const uploadCustomLogo = useSnipperStore((s) => s.uploadCustomLogo);
-  const clearCustomLogo = useSnipperStore((s) => s.clearCustomLogo);
+  const selectBuiltinSourceLogo = useSnipperStore((s) => s.selectBuiltinSourceLogo);
+  const chooseOtherSourceLogo = useSnipperStore((s) => s.chooseOtherSourceLogo);
+  const clearSourceLogo = useSnipperStore((s) => s.clearSourceLogo);
 
-  const handleBuiltInSelect = (id: SourceLogoSelectionId) => {
-    setSelectedSourceLogoId(id);
-  };
+  const hasCustomLogo = Boolean(sourceLogoObjectUrl);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      uploadCustomLogo(file);
+      chooseOtherSourceLogo(file);
     }
     event.target.value = '';
   };
 
   return (
     <section className={styles.section}>
-      <div className={styles.optionGrid} role="radiogroup" aria-label="Source logo">
-        {BUILTIN_SOURCE_LOGOS.map((logo) => (
-          <label
-            key={logo.id}
-            className={[
-              styles.logoOption,
-              selectedSourceLogoId === logo.id ? styles.logoOptionSelected : '',
-            ]
-              .filter(Boolean)
-              .join(' ')}
-          >
-            <input
-              type="radio"
-              name="source-logo"
-              value={logo.id}
-              checked={selectedSourceLogoId === logo.id}
-              onChange={() => handleBuiltInSelect(logo.id)}
-              className={styles.srOnly}
-            />
-            <img
-              className={styles.logoPreview}
-              src={logo.url}
-              alt=""
-              draggable={false}
-            />
-            <span className={styles.logoLabel}>{logo.label}</span>
-          </label>
-        ))}
+      <div className={styles.gallery} role="radiogroup" aria-label="Built-in source logos">
+        {BUILTIN_SOURCE_LOGOS.map((logo) => {
+          const isSelected =
+            !sourceLogoHidden &&
+            !hasCustomLogo &&
+            selectedBuiltinLogoId === logo.id;
 
-        <label
-          className={[
-            styles.logoOption,
-            selectedSourceLogoId === 'none' ? styles.logoOptionSelected : '',
-          ]
-            .filter(Boolean)
-            .join(' ')}
-        >
-          <input
-            type="radio"
-            name="source-logo"
-            value="none"
-            checked={selectedSourceLogoId === 'none'}
-            onChange={() => handleBuiltInSelect('none')}
-            className={styles.srOnly}
-          />
-          <span className={styles.noLogoPreview}>No logo</span>
-          <span className={styles.logoLabel}>No logo</span>
-        </label>
-
-        {customLogoObjectUrl ? (
-          <label
-            className={[
-              styles.logoOption,
-              selectedSourceLogoId === 'custom' ? styles.logoOptionSelected : '',
-            ]
-              .filter(Boolean)
-              .join(' ')}
-          >
-            <input
-              type="radio"
-              name="source-logo"
-              value="custom"
-              checked={selectedSourceLogoId === 'custom'}
-              onChange={() => handleBuiltInSelect('custom')}
-              className={styles.srOnly}
-            />
-            <img
-              className={styles.logoPreview}
-              src={customLogoObjectUrl}
-              alt=""
-              draggable={false}
-            />
-            <span className={styles.logoLabel}>Custom upload</span>
-          </label>
-        ) : null}
+          return (
+            <button
+              key={logo.id}
+              type="button"
+              className={[
+                styles.galleryButton,
+                isSelected ? styles.galleryButtonSelected : '',
+              ]
+                .filter(Boolean)
+                .join(' ')}
+              title={logo.label}
+              aria-label={logo.label}
+              aria-pressed={isSelected}
+              onClick={() => selectBuiltinSourceLogo(logo.id)}
+            >
+              <img
+                className={styles.galleryLogo}
+                src={logo.url}
+                alt=""
+                draggable={false}
+              />
+            </button>
+          );
+        })}
       </div>
 
-      <div className={styles.uploadRow}>
+      <div className={styles.buttonRow}>
         <input
           ref={fileInputRef}
           type="file"
-          accept=".svg,.png,.jpg,.jpeg,.webp,image/svg+xml,image/png,image/jpeg,image/webp"
+          accept={LOGO_ACCEPT}
           className={styles.fileInput}
           onChange={handleFileChange}
         />
         <button
           type="button"
-          className={styles.secondaryButton}
+          className={[
+            styles.secondaryButton,
+            hasCustomLogo && !sourceLogoHidden ? styles.secondaryButtonSelected : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}
           onClick={() => fileInputRef.current?.click()}
         >
-          Upload custom logo
+          Choose Other Logo
         </button>
-        {customLogoObjectUrl ? (
-          <button
-            type="button"
-            className={styles.secondaryButton}
-            onClick={clearCustomLogo}
-          >
-            Clear custom logo
-          </button>
-        ) : null}
+        <button
+          type="button"
+          className={styles.secondaryButton}
+          onClick={clearSourceLogo}
+          disabled={sourceLogoHidden}
+        >
+          Clear Logo
+        </button>
       </div>
 
-      <p className={styles.helpText}>
-        SVG, PNG, JPG, JPEG, or WEBP. Custom logos are session-only.
-      </p>
+      {hasCustomLogo && !sourceLogoHidden ? (
+        <p className={styles.statusText}>Custom logo selected.</p>
+      ) : null}
+
+      <p className={styles.helpText}>Choose SVG, PNG, JPG, WEBP, AVIF, or GIF.</p>
 
       {logoUploadError ? (
         <p className={styles.error} role="alert">

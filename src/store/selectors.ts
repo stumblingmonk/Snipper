@@ -2,23 +2,24 @@ import {
   DEFAULT_FORMAT_BACKGROUND,
   getStandardArticleLayout,
 } from '@/constants/standardArticleLayouts';
-import { BUILTIN_SOURCE_LOGOS } from '@/constants/sourceLogos';
+import { getBuiltinSourceLogoUrl } from '@/constants/builtinSourceLogos';
 import type { FormatKey } from '@/constants/formats';
 import type { SnipperState } from '@/store/snipperStore';
 
 export function resolveSourceLogoUrl(state: SnipperState): string | null {
-  if (state.selectedSourceLogoId === 'none') {
+  if (state.sourceLogoHidden) {
     return null;
   }
 
-  if (state.selectedSourceLogoId === 'custom') {
-    return state.customLogoObjectUrl;
+  if (state.sourceLogoObjectUrl) {
+    return state.sourceLogoObjectUrl;
   }
 
-  const builtin = BUILTIN_SOURCE_LOGOS.find(
-    (logo) => logo.id === state.selectedSourceLogoId,
-  );
-  return builtin?.url ?? null;
+  if (state.selectedBuiltinLogoId) {
+    return getBuiltinSourceLogoUrl(state.selectedBuiltinLogoId);
+  }
+
+  return null;
 }
 
 export interface ResolvedFormatBackground {

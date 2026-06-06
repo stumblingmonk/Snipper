@@ -5,9 +5,8 @@ import {
   type CropSettings,
 } from '@/constants/imageSettings';
 import {
-  DEFAULT_SOURCE_LOGO_ID,
-  type SourceLogoSelectionId,
-} from '@/constants/sourceLogos';
+  getDefaultBuiltinSourceLogoId,
+} from '@/constants/builtinSourceLogos';
 import { appendWithSpacing } from '@/utils/appendText';
 import {
   createArticleImageObjectUrl,
@@ -63,8 +62,9 @@ export interface SnipperState {
   excerptFitStatus: FitStatus;
   headlineResolvedFontSize: number;
   excerptResolvedFontSize: number;
-  selectedSourceLogoId: SourceLogoSelectionId;
-  customLogoObjectUrl: string | null;
+  selectedBuiltinLogoId: string | null;
+  sourceLogoObjectUrl: string | null;
+  sourceLogoHidden: boolean;
   articleImageObjectUrl: string | null;
   uploadedArticleImageObjectUrl: string | null;
   flattenedCropUrl: string | null;
@@ -106,9 +106,9 @@ export interface SnipperState {
   setScratchpad: (scratchpad: string) => void;
   setScratchpadSelection: (selection: ScratchpadSelection) => void;
   setCaption: (caption: string) => void;
-  setSelectedSourceLogoId: (id: SourceLogoSelectionId) => void;
-  uploadCustomLogo: (file: File) => void;
-  clearCustomLogo: () => void;
+  selectBuiltinSourceLogo: (logoId: string) => void;
+  chooseOtherSourceLogo: (file: File) => void;
+  clearSourceLogo: () => void;
   setImageMode: (mode: ImageMode) => void;
   setCropZoom: (zoom: number) => void;
   setCropOffsetX: (offsetX: number) => void;
@@ -137,8 +137,9 @@ export const useSnipperStore = create<SnipperState>((set, get) => ({
   excerptFitStatus: 'fits',
   headlineResolvedFontSize: HEADLINE_TYPO.default,
   excerptResolvedFontSize: EXCERPT_TYPO.default,
-  selectedSourceLogoId: DEFAULT_SOURCE_LOGO_ID,
-  customLogoObjectUrl: null,
+  selectedBuiltinLogoId: getDefaultBuiltinSourceLogoId(),
+  sourceLogoObjectUrl: null,
+  sourceLogoHidden: false,
   articleImageObjectUrl: DEFAULT_CONTENT.articleImageUrl,
   uploadedArticleImageObjectUrl: null,
   flattenedCropUrl: null,
@@ -214,36 +215,44 @@ export const useSnipperStore = create<SnipperState>((set, get) => ({
   setScratchpad: (scratchpad) => set({ scratchpad }),
   setScratchpadSelection: (scratchpadSelection) => set({ scratchpadSelection }),
   setCaption: (caption) => set({ caption }),
-  setSelectedSourceLogoId: (selectedSourceLogoId) =>
-    set({ selectedSourceLogoId, logoUploadError: null }),
-  uploadCustomLogo: (file) => {
+  selectBuiltinSourceLogo: (logoId) => {
+    const { sourceLogoObjectUrl } = get();
+    revokeIfBlob(sourceLogoObjectUrl);
+
+    set({
+      selectedBuiltinLogoId: logoId,
+      sourceLogoObjectUrl: null,
+      sourceLogoHidden: false,
+      logoUploadError: null,
+    });
+  },
+  chooseOtherSourceLogo: (file) => {
     try {
-      const { customLogoObjectUrl } = get();
-      revokeIfBlob(customLogoObjectUrl);
+      const { sourceLogoObjectUrl } = get();
+      revokeIfBlob(sourceLogoObjectUrl);
 
       const objectUrl = createLogoObjectUrl(file);
       set({
-        customLogoObjectUrl: objectUrl,
-        selectedSourceLogoId: 'custom',
+        selectedBuiltinLogoId: null,
+        sourceLogoObjectUrl: objectUrl,
+        sourceLogoHidden: false,
         logoUploadError: null,
       });
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : 'Custom logo upload failed';
+        err instanceof Error ? err.message : 'Source logo selection failed';
       set({ logoUploadError: message });
     }
   },
-  clearCustomLogo: () => {
-    const { customLogoObjectUrl, selectedSourceLogoId } = get();
-    revokeIfBlob(customLogoObjectUrl);
+  clearSourceLogo: () => {
+    const { sourceLogoObjectUrl } = get();
+    revokeIfBlob(sourceLogoObjectUrl);
 
     set({
-      customLogoObjectUrl: null,
+      selectedBuiltinLogoId: null,
+      sourceLogoObjectUrl: null,
+      sourceLogoHidden: true,
       logoUploadError: null,
-      selectedSourceLogoId:
-        selectedSourceLogoId === 'custom'
-          ? DEFAULT_SOURCE_LOGO_ID
-          : selectedSourceLogoId,
     });
   },
   setImageMode: (imageMode) => set({ imageMode }),
