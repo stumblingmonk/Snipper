@@ -43,6 +43,8 @@ export interface StandardArticleLayout {
     excerptMarginTopNoImage: number;
   };
   noImageHeadlineHeight?: number;
+  /** Stacked layouts: image height as fraction of content width. Default 0.75 (4:3). */
+  stackedImageHeightRatio?: number;
   headlineTypo: TypographyBounds;
   excerptTypo: TypographyBounds;
   backgroundAsset: string;
@@ -91,9 +93,12 @@ function footerBlockHeight(layout: StandardArticleLayout, hasFooter: boolean): n
   return layout.footer.paddingTop + layout.footer.paddingBottom + obbHeight;
 }
 
-/** Stacked layouts use a deliberate 4:3 article image crop. */
-function stackedImageFrameHeight(contentWidth: number): number {
-  return Math.round(contentWidth * 0.75);
+/** Stacked layouts: image height from content width × ratio (default 4:3). */
+function stackedImageFrameHeight(
+  contentWidth: number,
+  ratio: number = 0.75,
+): number {
+  return Math.round(contentWidth * ratio);
 }
 
 /** Stacked layouts: headlineZone.height and subheadZoneHeight are max-height caps, not reserved brick heights. */
@@ -102,7 +107,8 @@ function computeStackedZones(input: ComputeArticleZonesInput): ComputedArticleZo
   const innerW = format.width - layout.cardPadding * 2;
   const zoneMarginX = layout.zoneMarginX;
   const contentW = innerW - zoneMarginX * 2;
-  const imageFrameHeight = stackedImageFrameHeight(contentW);
+  const ratio = layout.stackedImageHeightRatio ?? 0.75;
+  const imageFrameHeight = stackedImageFrameHeight(contentW, ratio);
 
   const headlineMaxHeight =
     !showImage && layout.noImageHeadlineHeight
@@ -189,7 +195,7 @@ const STORY_LAYOUT: StandardArticleLayout = {
   fallbackBackgroundColor: '#e8e4dc',
 };
 
-/** Square — same editorial stack, most constrained. */
+/** Square — editorial stack tuned for ~⅓ image / ⅓ body balance. */
 const SQUARE_LAYOUT: StandardArticleLayout = {
   formatKey: 'square',
   layoutVariant: 'stacked',
@@ -197,29 +203,30 @@ const SQUARE_LAYOUT: StandardArticleLayout = {
   zoneMarginX: 140,
   containerRadius: 0,
   logoPlacement: 'centered',
+  stackedImageHeightRatio: 0.45,
   header: {
     paddingTop: 40,
-    paddingBottom: 10,
-    logoMaxWidth: 360,
-    logoMaxHeight: 90,
+    paddingBottom: 18,
+    logoMaxWidth: 300,
+    logoMaxHeight: 72,
   },
   headlineZone: { width: 800, height: 96 },
   subheadZoneHeight: 78,
   subheadFontSize: 24,
-  imageFrame: { width: 800, height: 600 },
+  imageFrame: { width: 800, height: 360 },
   excerptMinHeight: 56,
-  footer: { paddingTop: 12, paddingBottom: 36, fontSize: 15 },
+  footer: { paddingTop: 18, paddingBottom: 36, fontSize: 15 },
   spacing: {
-    subheadMarginTop: 4,
-    imageMarginTop: 10,
-    excerptMarginTop: 10,
+    subheadMarginTop: 12,
+    imageMarginTop: 18,
+    excerptMarginTop: 18,
     excerptMarginTopNoImage: 8,
   },
   noImageHeadlineHeight: 160,
   headlineTypo: {
     min: 40,
-    default: 44,
-    max: 50,
+    default: 40,
+    max: 46,
     autoFitMin: 40,
     stepPx: 5,
   },
@@ -234,7 +241,7 @@ const SQUARE_LAYOUT: StandardArticleLayout = {
   fallbackBackgroundColor: '#e8e4dc',
 };
 
-/** Portrait — Story stack compressed proportionally. */
+/** Portrait — Story-like editorial stack with reduced image dominance. */
 const PORTRAIT_LAYOUT: StandardArticleLayout = {
   formatKey: 'portrait',
   layoutVariant: 'stacked',
@@ -242,29 +249,30 @@ const PORTRAIT_LAYOUT: StandardArticleLayout = {
   zoneMarginX: 72,
   containerRadius: 0,
   logoPlacement: 'centered',
+  stackedImageHeightRatio: 0.4,
   header: {
     paddingTop: 56,
-    paddingBottom: 12,
-    logoMaxWidth: 420,
-    logoMaxHeight: 100,
+    paddingBottom: 22,
+    logoMaxWidth: 360,
+    logoMaxHeight: 84,
   },
   headlineZone: { width: 936, height: 190 },
   subheadZoneHeight: 96,
   subheadFontSize: 28,
-  imageFrame: { width: 936, height: 702 },
+  imageFrame: { width: 936, height: 374 },
   excerptMinHeight: 72,
-  footer: { paddingTop: 14, paddingBottom: 44, fontSize: 16 },
+  footer: { paddingTop: 22, paddingBottom: 44, fontSize: 16 },
   spacing: {
-    subheadMarginTop: 6,
-    imageMarginTop: 14,
-    excerptMarginTop: 12,
+    subheadMarginTop: 16,
+    imageMarginTop: 24,
+    excerptMarginTop: 22,
     excerptMarginTopNoImage: 10,
   },
   noImageHeadlineHeight: 240,
   headlineTypo: {
     min: 46,
-    default: 48,
-    max: 58,
+    default: 44,
+    max: 52,
     autoFitMin: 46,
     stepPx: 6,
   },
@@ -279,7 +287,7 @@ const PORTRAIT_LAYOUT: StandardArticleLayout = {
   fallbackBackgroundColor: '#e8e4dc',
 };
 
-/** LinkedIn — split column; image right ~47% width. */
+/** LinkedIn — split column; image right ~3:4 at full canvas height. */
 const LINKEDIN_LAYOUT: StandardArticleLayout = {
   formatKey: 'linkedin',
   layoutVariant: 'split',
@@ -289,15 +297,15 @@ const LINKEDIN_LAYOUT: StandardArticleLayout = {
   containerRadius: 0,
   logoPlacement: 'inlineAboveHeadline',
   header: {
-    paddingTop: 0,
-    paddingBottom: 8,
-    logoMaxWidth: 280,
-    logoMaxHeight: 72,
+    paddingTop: 28,
+    paddingBottom: 18,
+    logoMaxWidth: 240,
+    logoMaxHeight: 60,
   },
   headlineZone: { width: 584, height: 88 },
   subheadZoneHeight: 52,
   subheadFontSize: 18,
-  imageFrame: { width: 560, height: 627 },
+  imageFrame: { width: 475, height: 627 },
   excerptMinHeight: 64,
   footer: { paddingTop: 10, paddingBottom: 16, fontSize: 11 },
   spacing: {

@@ -118,7 +118,7 @@ function LinkedInBrandRow({ logoUrl }: { logoUrl: string | null }) {
 
   return (
     <div className={styles.linkedinBrandRow}>
-      <LogoBlock logoUrl={logoUrl} centered={false} />
+      <LogoBlock logoUrl={logoUrl} centered />
     </div>
   );
 }
