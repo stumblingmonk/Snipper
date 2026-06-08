@@ -1,10 +1,11 @@
+import { resolveArticleImageThumbnailUrl } from '@/store/selectors';
 import { useSnipperStore } from '@/store/snipperStore';
 import styles from './ArticleImagePreview.module.css';
 
 export function ArticleImagePreview() {
-  const articleImageObjectUrl = useSnipperStore((s) => s.articleImageObjectUrl);
+  const thumbnailUrl = useSnipperStore(resolveArticleImageThumbnailUrl);
 
-  if (!articleImageObjectUrl) {
+  if (!thumbnailUrl) {
     return (
       <div className={styles.previewWrap} aria-hidden="true">
         <span className={styles.previewPlaceholder}>No image</span>
@@ -17,7 +18,7 @@ export function ArticleImagePreview() {
       <div className={styles.previewFrame}>
         <img
           className={styles.previewImage}
-          src={articleImageObjectUrl}
+          src={thumbnailUrl}
           alt=""
           draggable={false}
         />

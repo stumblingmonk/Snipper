@@ -1,4 +1,13 @@
 import type { ImageMode } from '@/constants/formats';
+import {
+  CROP_OFFSET_MAX,
+  CROP_OFFSET_MIN,
+  CROP_OFFSET_STEP,
+  CROP_ZOOM_MAX,
+  CROP_ZOOM_MIN,
+  CROP_ZOOM_STEP,
+  cropHasPanRoom,
+} from '@/constants/imageSettings';
 import type { ReactNode } from 'react';
 import { useSnipperStore } from '@/store/snipperStore';
 import styles from './ImageModeControls.module.css';
@@ -71,6 +80,7 @@ export function ImageModeControls({
 
   const showLeft = part === 'all' || part === 'left';
   const showCrop = (part === 'all' || part === 'crop') && imageMode === 'crop';
+  const panEnabled = cropHasPanRoom(cropZoom);
 
   if (part === 'crop' && imageMode !== 'crop') {
     return null;
@@ -143,14 +153,18 @@ export function ImageModeControls({
               <input
                 id="crop-zoom-content"
                 type="range"
-                min="1"
-                max="3"
-                step="0.01"
+                min={CROP_ZOOM_MIN}
+                max={CROP_ZOOM_MAX}
+                step={CROP_ZOOM_STEP}
                 value={cropZoom}
                 onChange={(e) => setCropZoom(Number(e.target.value))}
                 className={styles.slider}
               />
             </div>
+
+            {!panEnabled ? (
+              <p className={styles.cropHint}>Zoom in to pan.</p>
+            ) : null}
 
             <div className={styles.sliderRow}>
               <label className={styles.sliderLabel} htmlFor="crop-x-content">
@@ -160,12 +174,13 @@ export function ImageModeControls({
               <input
                 id="crop-x-content"
                 type="range"
-                min="-1"
-                max="1"
-                step="0.01"
+                min={CROP_OFFSET_MIN}
+                max={CROP_OFFSET_MAX}
+                step={CROP_OFFSET_STEP}
                 value={cropOffsetX}
                 onChange={(e) => setCropOffsetX(Number(e.target.value))}
                 className={styles.slider}
+                disabled={!panEnabled}
               />
             </div>
 
@@ -177,12 +192,13 @@ export function ImageModeControls({
               <input
                 id="crop-y-content"
                 type="range"
-                min="-1"
-                max="1"
-                step="0.01"
+                min={CROP_OFFSET_MIN}
+                max={CROP_OFFSET_MAX}
+                step={CROP_OFFSET_STEP}
                 value={cropOffsetY}
                 onChange={(e) => setCropOffsetY(Number(e.target.value))}
                 className={styles.slider}
+                disabled={!panEnabled}
               />
             </div>
           </div>

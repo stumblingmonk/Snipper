@@ -11,6 +11,7 @@ interface ControlsPanelProps {
   exportError: string | null;
   lastExportSize: { width: number; height: number } | null;
   backgroundFallbackNote: string | null;
+  exportDisabled?: boolean;
 }
 
 export function ControlsPanel({
@@ -19,6 +20,7 @@ export function ControlsPanel({
   exportError,
   lastExportSize,
   backgroundFallbackNote,
+  exportDisabled = false,
 }: ControlsPanelProps) {
   const isExporting = exportStatus === 'exporting';
   const [searchQuery, setSearchQuery] = useState('');
@@ -80,7 +82,7 @@ export function ControlsPanel({
           type="button"
           className={styles.exportButton}
           onClick={onExport}
-          disabled={isExporting}
+          disabled={isExporting || exportDisabled}
         >
           {isExporting ? 'Exporting…' : 'Export PNG'}
         </button>

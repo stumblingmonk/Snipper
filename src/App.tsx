@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FORMATS, getFormatExportFilename, type FormatKey } from '@/constants/formats';
+import { FLATTEN_DEBOUNCE_MS } from '@/constants/imageSettings';
 import { computeArticleZones, getStandardArticleLayout } from '@/constants/standardArticleLayouts';
 import { exportCardPng } from '@/utils/exportCard';
 import { flattenImage } from '@/utils/flattenImage';
@@ -18,6 +19,9 @@ function isFormatKey(value: string): value is FormatKey {
 
 export default function App() {
   const exportRef = useRef<HTMLDivElement>(null);
+  const flattenGenerationRef = useRef(0);
+  const flattenTimeoutRef = useRef<number | null>(null);
+  const [flattenPending, setFlattenPending] = useState(false);
 
   const storeFormatKey = useSnipperStore((s) => s.format);
   const format = isFormatKey(storeFormatKey) ? FORMATS[storeFormatKey] : FORMATS.story;
@@ -70,36 +74,89 @@ export default function App() {
     [layout, format, showImage, subhead, logoUrl],
   );
 
+  const clearFlattenTimeout = useCallback(() => {
+    if (flattenTimeoutRef.current !== null) {
+      window.clearTimeout(flattenTimeoutRef.current);
+      flattenTimeoutRef.current = null;
+    }
+  }, []);
+
+  const runFlatten = useCallback(
+    async (generation: number): Promise<boolean> => {
+      const state = useSnipperStore.getState();
+      const sourceUrl = state.articleImageObjectUrl;
+      const mode = state.imageMode;
+
+      if (!sourceUrl || mode === 'none') {
+        if (generation === flattenGenerationRef.current) {
+          setFlattenedCropUrl(null);
+          setFlattenPending(false);
+        }
+        return true;
+      }
+
+      const { width, height } = computedImageFrame;
+
+      try {
+        const url = await flattenImage({
+          sourceUrl,
+          outputWidth: width,
+          outputHeight: height,
+          mode,
+          crop: {
+            zoom: state.cropZoom,
+            offsetX: state.cropOffsetX,
+            offsetY: state.cropOffsetY,
+          },
+        });
+
+        if (generation !== flattenGenerationRef.current) {
+          URL.revokeObjectURL(url);
+          return false;
+        }
+
+        setFlattenedCropUrl(url);
+        return true;
+      } catch (err: unknown) {
+        console.error('Flatten failed:', err);
+        return false;
+      } finally {
+        if (generation === flattenGenerationRef.current) {
+          setFlattenPending(false);
+        }
+      }
+    },
+    [computedImageFrame, setFlattenedCropUrl],
+  );
+
+  const flushFlatten = useCallback(async (): Promise<boolean> => {
+    clearFlattenTimeout();
+    flattenGenerationRef.current += 1;
+    const generation = flattenGenerationRef.current;
+    setFlattenPending(true);
+    return runFlatten(generation);
+  }, [clearFlattenTimeout, runFlatten]);
+
   useEffect(() => {
     if (!articleImageObjectUrl || imageMode === 'none') {
+      flattenGenerationRef.current += 1;
+      clearFlattenTimeout();
       setFlattenedCropUrl(null);
+      setFlattenPending(false);
       return;
     }
 
-    let cancelled = false;
-    const { width, height } = computedImageFrame;
+    flattenGenerationRef.current += 1;
+    const generation = flattenGenerationRef.current;
+    setFlattenPending(true);
+    clearFlattenTimeout();
 
-    flattenImage({
-      sourceUrl: articleImageObjectUrl,
-      outputWidth: width,
-      outputHeight: height,
-      mode: imageMode,
-      crop: { zoom: cropZoom, offsetX: cropOffsetX, offsetY: cropOffsetY },
-    })
-      .then((url) => {
-        if (cancelled) {
-          URL.revokeObjectURL(url);
-          return;
-        }
-        setFlattenedCropUrl(url);
-      })
-      .catch((err: unknown) => {
-        console.error('Flatten failed:', err);
-      });
+    flattenTimeoutRef.current = window.setTimeout(() => {
+      flattenTimeoutRef.current = null;
+      void runFlatten(generation);
+    }, FLATTEN_DEBOUNCE_MS);
 
-    return () => {
-      cancelled = true;
-    };
+    return clearFlattenTimeout;
   }, [
     articleImageObjectUrl,
     imageMode,
@@ -107,15 +164,27 @@ export default function App() {
     cropOffsetX,
     cropOffsetY,
     computedImageFrame,
+    clearFlattenTimeout,
+    runFlatten,
     setFlattenedCropUrl,
   ]);
 
-  const cardImageUrl =
-    imageMode === 'none' ? null : flattenedCropUrl ?? articleImageObjectUrl;
+  const cardImageUrl = imageMode === 'none' ? null : flattenedCropUrl;
+  const exportBlocked =
+    flattenPending || (showImage && Boolean(articleImageObjectUrl) && !flattenedCropUrl);
 
   const handleExport = useCallback(async () => {
     const node = exportRef.current;
     if (!node) return;
+
+    if (imageMode !== 'none' && articleImageObjectUrl) {
+      const flushed = await flushFlatten();
+      const latestFlattened = useSnipperStore.getState().flattenedCropUrl;
+      if (!flushed || !latestFlattened) {
+        setExportStatus('error', 'Article image is still processing. Try again.');
+        return;
+      }
+    }
 
     setExportStatus('exporting');
     try {
@@ -130,7 +199,15 @@ export default function App() {
       const message = err instanceof Error ? err.message : 'Export failed';
       setExportStatus('error', message);
     }
-  }, [format.width, format.height, format.key, setExportStatus]);
+  }, [
+    articleImageObjectUrl,
+    flushFlatten,
+    format.width,
+    format.height,
+    format.key,
+    imageMode,
+    setExportStatus,
+  ]);
 
   const sharedCardProps = {
     format,
@@ -143,7 +220,7 @@ export default function App() {
     backgroundUrl,
     backgroundFallbackColor,
     imageUrl: cardImageUrl,
-    showImage: imageMode !== 'none' && Boolean(cardImageUrl),
+    showImage: showImage && Boolean(cardImageUrl),
   };
 
   return (
@@ -156,6 +233,7 @@ export default function App() {
             exportError={exportError}
             lastExportSize={lastExportSize}
             backgroundFallbackNote={backgroundFallbackNote}
+            exportDisabled={exportBlocked}
           />
         </div>
 

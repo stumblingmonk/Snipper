@@ -5,6 +5,8 @@ import {
 } from '@/constants/backgroundPacks';
 import {
   DEFAULT_CROP_SETTINGS,
+  clampCropOffset,
+  clampCropZoom,
   type CropSettings,
 } from '@/constants/imageSettings';
 import {
@@ -272,9 +274,9 @@ export const useSnipperStore = create<SnipperState>((set, get) => ({
     });
   },
   setImageMode: (imageMode) => set({ imageMode }),
-  setCropZoom: (cropZoom) => set({ cropZoom }),
-  setCropOffsetX: (cropOffsetX) => set({ cropOffsetX }),
-  setCropOffsetY: (cropOffsetY) => set({ cropOffsetY }),
+  setCropZoom: (cropZoom) => set({ cropZoom: clampCropZoom(cropZoom) }),
+  setCropOffsetX: (cropOffsetX) => set({ cropOffsetX: clampCropOffset(cropOffsetX) }),
+  setCropOffsetY: (cropOffsetY) => set({ cropOffsetY: clampCropOffset(cropOffsetY) }),
   resetCrop: () =>
     set({
       cropZoom: DEFAULT_CROP_SETTINGS.zoom,

@@ -159,6 +159,18 @@
   opacity: 0.45;
 }
 
+.cropHint {
+  margin: 0;
+  font-size: 10px;
+  line-height: 1.35;
+  color: var(--text-muted);
+}
+
+.slider:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 .helpText {
   margin: 6px 0 0;
   font-size: 11px;

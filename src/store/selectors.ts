@@ -86,3 +86,8 @@ export function resolveFormatBackground(
     fallbackNote: null,
   };
 }
+
+/** Passive article-image thumbnail — original/source only, never flattened output. */
+export function resolveArticleImageThumbnailUrl(state: SnipperState): string | null {
+  return state.uploadedArticleImageObjectUrl ?? state.articleImageObjectUrl;
+}
