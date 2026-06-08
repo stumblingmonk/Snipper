@@ -11,6 +11,8 @@ import { StandardArticleCard } from '@/components/cards/StandardArticleCard';
 import { ControlsPanel } from '@/components/layout/ControlsPanel';
 import { ContentWorkspace } from '@/components/layout/ContentWorkspace';
 import { PreviewPanel } from '@/components/layout/PreviewPanel';
+import type { PreviewZoneMetrics } from '@/context/PreviewZoneMetricsContext';
+import { PreviewZoneMetricsProvider } from '@/context/PreviewZoneMetricsContext';
 import styles from './App.module.css';
 
 function isFormatKey(value: string): value is FormatKey {
@@ -57,6 +59,11 @@ export default function App() {
   const excerptResolvedFontSize = useSnipperStore(
     (s) => s.excerptResolvedFontSize,
   );
+  const excerptLineClamp = useSnipperStore((s) => s.excerptLineClamp);
+  const [previewZoneMetrics, setPreviewZoneMetrics] = useState<PreviewZoneMetrics>({
+    excerptWidth: 0,
+    excerptHeight: 0,
+  });
   const setFlattenedCropUrl = useSnipperStore((s) => s.setFlattenedCropUrl);
   const setExportStatus = useSnipperStore((s) => s.setExportStatus);
 
@@ -223,7 +230,17 @@ export default function App() {
     showImage: showImage && Boolean(cardImageUrl),
   };
 
+  const handlePreviewZoneMetrics = useCallback((metrics: PreviewZoneMetrics) => {
+    setPreviewZoneMetrics((prev) =>
+      prev.excerptWidth === metrics.excerptWidth &&
+      prev.excerptHeight === metrics.excerptHeight
+        ? prev
+        : metrics,
+    );
+  }, []);
+
   return (
+    <PreviewZoneMetricsProvider value={previewZoneMetrics}>
     <div className={styles.app}>
       <div className={styles.columns}>
         <div className={styles.columnShell}>
@@ -243,7 +260,10 @@ export default function App() {
 
         <div className={styles.columnShell}>
           <PreviewPanel format={format}>
-            <PreviewCardWithTextFit {...sharedCardProps} />
+            <PreviewCardWithTextFit
+              {...sharedCardProps}
+              onPreviewZoneMetrics={handlePreviewZoneMetrics}
+            />
           </PreviewPanel>
         </div>
       </div>
@@ -259,9 +279,11 @@ export default function App() {
             {...sharedCardProps}
             headlineFontSize={headlineResolvedFontSize}
             excerptFontSize={excerptResolvedFontSize}
+            excerptLineClamp={excerptLineClamp}
           />
         </div>
       </div>
     </div>
+    </PreviewZoneMetricsProvider>
   );
 }

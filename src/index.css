@@ -1,6 +1,7 @@
 :root {
   --font-headline: 'Special Gothic Expanded One', sans-serif;
   --font-body: 'IBM Plex Sans', sans-serif;
+  --font-subhead: 'IBM Plex Mono', monospace;
 
   --app-bg: #121212;
   --app-bg-deep: #0d0d0d;

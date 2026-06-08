@@ -5,6 +5,10 @@ import { ImageModeControls } from '@/components/layout/ImageModeControls';
 import { OverflowHighlightField } from '@/components/layout/OverflowHighlightField';
 import { SnippetEditor } from '@/components/layout/SnippetEditor';
 import { TextFitFieldHeader } from '@/components/layout/TextFitFieldHeader';
+import {
+  CARD_SUBHEAD_LETTER_SPACING,
+  CARD_SUBHEAD_LINE_HEIGHT,
+} from '@/constants/cardTypography';
 import { FORMATS } from '@/constants/formats';
 import {
   computeArticleZones,
@@ -30,9 +34,6 @@ export function ContentWorkspace() {
   const caption = useSnipperStore((s) => s.caption);
   const imageMode = useSnipperStore((s) => s.imageMode);
   const headlineFitStatus = useSnipperStore((s) => s.headlineFitStatus);
-  const headlineResolvedFontSize = useSnipperStore(
-    (s) => s.headlineResolvedFontSize,
-  );
   const logoUrl = useSnipperStore(resolveSourceLogoUrl);
   const hasSelection = useSnipperStore(selectHasScratchpadSelection);
 
@@ -65,30 +66,16 @@ export function ContentWorkspace() {
     [layout, format, showImage, subhead, logoUrl],
   );
 
-  const headlineMeasureStyle = useMemo(
-    () => ({
-      fontFamily: '"Special Gothic Expanded One", sans-serif',
-      fontSize: headlineResolvedFontSize,
-      fontWeight: 400,
-      lineHeight: 1.06,
-      width: zones.headlineZone.width,
-      height: zones.headlineZone.height,
-    }),
-    [
-      headlineResolvedFontSize,
-      zones.headlineZone.width,
-      zones.headlineZone.height,
-    ],
-  );
-
   const subheadMeasureStyle = useMemo(
     () =>
       subhead.trim()
         ? {
-            fontFamily: '"IBM Plex Sans", sans-serif',
+            fontFamily: '"IBM Plex Mono", monospace',
             fontSize: layout.subheadFontSize,
-            fontWeight: 500,
-            lineHeight: 1.28,
+            fontWeight: 700,
+            lineHeight: CARD_SUBHEAD_LINE_HEIGHT,
+            letterSpacing: CARD_SUBHEAD_LETTER_SPACING,
+            textTransform: 'uppercase',
             width: zones.headlineZone.width,
             height: zones.subheadZoneHeight,
           }
@@ -101,11 +88,6 @@ export function ContentWorkspace() {
     ],
   );
 
-  const headlineSplitIndex = useTextOverflowSplitIndex(
-    headline,
-    headlineFitStatus === 'too-long',
-    headlineMeasureStyle,
-  );
   const subheadSplitIndex = useTextOverflowSplitIndex(
     subhead,
     Boolean(subhead.trim()),
@@ -144,16 +126,19 @@ export function ContentWorkspace() {
       <section className={styles.group}>
         <div className={styles.fieldCompact}>
           <TextFitFieldHeader field="headline" label="Headline" htmlFor="headline" />
+          {/* Headline overflow: status label + tooLong border only — no inline highlight. */}
           <OverflowHighlightField
             id="headline"
-            variant="input"
+            variant="headline"
+            rows={3}
+            minHeight={72}
+            maxHeight={120}
             value={headline}
             onChange={setHeadline}
             placeholder="Headline for the card"
-            showOverflowHighlight={
-              headlineFitStatus === 'too-long' && headlineSplitIndex !== null
-            }
-            splitIndex={headlineSplitIndex}
+            showOverflowHighlight={false}
+            splitIndex={null}
+            tooLong={headlineFitStatus === 'too-long'}
           />
         </div>
 

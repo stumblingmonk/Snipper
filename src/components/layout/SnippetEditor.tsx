@@ -1,9 +1,10 @@
-import { useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { FORMATS } from '@/constants/formats';
-import { computeArticleZones, getStandardArticleLayout } from '@/constants/standardArticleLayouts';
-import { resolveSourceLogoUrl } from '@/store/selectors';
+import { useLayoutEffect, useRef, useState } from 'react';
+import { usePreviewZoneMetrics } from '@/context/PreviewZoneMetricsContext';
 import { useSnipperStore } from '@/store/snipperStore';
-import { computeExcerptOverflowSplitIndex } from '@/utils/excerptOverflowPreview';
+import {
+  computeExcerptOverflowSplitIndex,
+  excerptCapacityHeightFromLineClamp,
+} from '@/utils/excerptOverflowPreview';
 import styles from './SnippetEditor.module.css';
 
 interface SnippetEditorProps {
@@ -24,41 +25,37 @@ export function SnippetEditor({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const highlightRef = useRef<HTMLDivElement>(null);
 
-  const formatKey = useSnipperStore((s) => s.format);
   const excerpt = useSnipperStore((s) => s.excerpt);
   const excerptFitStatus = useSnipperStore((s) => s.excerptFitStatus);
   const excerptResolvedFontSize = useSnipperStore(
     (s) => s.excerptResolvedFontSize,
   );
-  const subhead = useSnipperStore((s) => s.subhead);
-  const imageMode = useSnipperStore((s) => s.imageMode);
-  const logoUrl = useSnipperStore(resolveSourceLogoUrl);
+  const excerptLineClamp = useSnipperStore((s) => s.excerptLineClamp);
   const setExcerpt = useSnipperStore((s) => s.setExcerpt);
-
-  const format = FORMATS[formatKey];
-  const layout = useMemo(
-    () => getStandardArticleLayout(formatKey),
-    [formatKey],
-  );
-  const showImage = imageMode !== 'none';
-  const zones = useMemo(
-    () =>
-      computeArticleZones({
-        layout,
-        format,
-        showImage,
-        hasSubhead: Boolean(subhead.trim()),
-        hasLogo: Boolean(logoUrl),
-        hasFooter: true,
-      }),
-    [layout, format, showImage, subhead, logoUrl],
-  );
+  const { excerptWidth, excerptHeight } = usePreviewZoneMetrics();
 
   const [splitIndex, setSplitIndex] = useState<number | null>(null);
-  const showOverflowHighlight = excerptFitStatus === 'too-long' && splitIndex !== null;
+  const showOverflowHighlight =
+    excerptFitStatus === 'too-long' &&
+    splitIndex !== null &&
+    splitIndex > 0 &&
+    splitIndex < excerpt.length;
 
   useLayoutEffect(() => {
     if (excerptFitStatus !== 'too-long' || !excerpt.trim()) {
+      setSplitIndex(null);
+      return;
+    }
+
+    const capacityHeight =
+      excerptLineClamp > 0
+        ? excerptCapacityHeightFromLineClamp(
+            excerptLineClamp,
+            excerptResolvedFontSize,
+          )
+        : excerptHeight;
+
+    if (excerptWidth <= 0 || capacityHeight <= 0) {
       setSplitIndex(null);
       return;
     }
@@ -71,8 +68,8 @@ export function SnippetEditor({
       const index = computeExcerptOverflowSplitIndex(
         excerpt,
         excerptResolvedFontSize,
-        zones.excerptZone.width,
-        zones.excerptZone.height,
+        excerptWidth,
+        capacityHeight,
       );
       setSplitIndex(index);
     });
@@ -84,8 +81,9 @@ export function SnippetEditor({
     excerpt,
     excerptFitStatus,
     excerptResolvedFontSize,
-    zones.excerptZone.width,
-    zones.excerptZone.height,
+    excerptLineClamp,
+    excerptWidth,
+    excerptHeight,
   ]);
 
   const syncScroll = () => {

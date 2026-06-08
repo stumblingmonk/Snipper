@@ -2,11 +2,19 @@ import { useMemo } from 'react';
 import type { CSSProperties, RefObject } from 'react';
 import type { FormatSpec } from '@/constants/formats';
 import { OBB_BRAND_LOGO_URL, OBB_FOOTER_LOGO_WIDTH } from '@/constants/brandAssets';
+import {
+  CARD_EXCERPT_LINE_HEIGHT,
+  CARD_HEADLINE_LINE_HEIGHT,
+} from '@/constants/cardTypography';
 import type { StandardArticleLayout } from '@/constants/standardArticleLayouts';
 import {
   computeArticleZones,
   usesSplitLayout,
 } from '@/constants/standardArticleLayouts';
+import {
+  computeLineClamp,
+  visibleHeightFromLineClamp,
+} from '@/utils/textFitMeasure';
 import styles from './StandardArticleCard.module.css';
 
 export interface StandardArticleCardProps {
@@ -22,6 +30,7 @@ export interface StandardArticleCardProps {
   imageUrl: string | null;
   headlineFontSize: number;
   excerptFontSize: number;
+  excerptLineClamp?: number;
   showImage: boolean;
   className?: string;
   id?: string;
@@ -33,9 +42,12 @@ function layoutCssVariables(
   layout: StandardArticleLayout,
   format: FormatSpec,
   showImage: boolean,
+  hasLogo: boolean,
   zones: ReturnType<typeof computeArticleZones>,
 ): CSSProperties {
   const split = usesSplitLayout(layout, showImage);
+  const headlineMarginTop =
+    !split && !hasLogo ? `${layout.header.paddingTop}px` : '0px';
 
   return {
     '--sa-card-padding': `${layout.cardPadding}px`,
@@ -47,7 +59,10 @@ function layoutCssVariables(
     '--sa-logo-max-height': `${layout.header.logoMaxHeight}px`,
     '--sa-headline-zone-width': `${zones.headlineZone.width}px`,
     '--sa-headline-zone-height': `${zones.headlineZone.height}px`,
+    '--sa-headline-zone-max-height': `${zones.headlineZone.height}px`,
+    '--sa-headline-zone-margin-top': headlineMarginTop,
     '--sa-subhead-zone-height': `${zones.subheadZoneHeight}px`,
+    '--sa-subhead-zone-max-height': `${zones.subheadZoneHeight}px`,
     '--sa-subhead-font-size': `${layout.subheadFontSize}px`,
     '--sa-subhead-margin-top': `${zones.subheadMarginTop}px`,
     '--sa-image-frame-width': `${zones.imageFrame.width}px`,
@@ -111,12 +126,31 @@ function LinkedInBrandRow({ logoUrl }: { logoUrl: string | null }) {
 function HeadlineBlock({
   headline,
   headlineFontSize,
+  headlineMaxCapHeight,
   headlineZoneRef,
 }: {
   headline: string;
   headlineFontSize: number;
+  headlineMaxCapHeight: number;
   headlineZoneRef?: RefObject<HTMLDivElement | null>;
 }) {
+  const headlineLineClamp = computeLineClamp(
+    headlineMaxCapHeight,
+    headlineFontSize,
+    CARD_HEADLINE_LINE_HEIGHT,
+  );
+  const headlineVisibleHeight = visibleHeightFromLineClamp(
+    headlineLineClamp,
+    headlineFontSize,
+    CARD_HEADLINE_LINE_HEIGHT,
+  );
+  const headlineStyle =
+    headlineVisibleHeight > 0
+      ? ({
+          '--sa-headline-visible-height': `${headlineVisibleHeight}px`,
+        } as CSSProperties)
+      : undefined;
+
   return (
     <div
       ref={headlineZoneRef}
@@ -124,7 +158,9 @@ function HeadlineBlock({
       data-fit-zone="headline"
       style={{ fontSize: headlineFontSize }}
     >
-      <h1 className={styles.headline}>{headline}</h1>
+      <h1 className={styles.headline} style={headlineStyle}>
+        {headline}
+      </h1>
     </div>
   );
 }
@@ -134,7 +170,9 @@ function SubheadBlock({ subhead }: { subhead: string }) {
 
   return (
     <div className={styles.subheadZone}>
-      <p className={styles.subhead}>{subhead}</p>
+      <p className={styles.subhead}>
+        <span className={styles.subheadHighlight}>{subhead}</span>
+      </p>
     </div>
   );
 }
@@ -142,12 +180,26 @@ function SubheadBlock({ subhead }: { subhead: string }) {
 function ExcerptBlock({
   excerpt,
   excerptFontSize,
+  excerptLineClamp,
   excerptZoneRef,
 }: {
   excerpt: string;
   excerptFontSize: number;
+  excerptLineClamp?: number;
   excerptZoneRef?: RefObject<HTMLDivElement | null>;
 }) {
+  const excerptVisibleHeight = visibleHeightFromLineClamp(
+    excerptLineClamp ?? 0,
+    excerptFontSize,
+    CARD_EXCERPT_LINE_HEIGHT,
+  );
+  const excerptStyle =
+    excerptVisibleHeight > 0
+      ? ({
+          '--sa-excerpt-visible-height': `${excerptVisibleHeight}px`,
+        } as CSSProperties)
+      : undefined;
+
   return (
     <div
       ref={excerptZoneRef}
@@ -155,19 +207,16 @@ function ExcerptBlock({
       data-fit-zone="excerpt"
       style={{ fontSize: excerptFontSize }}
     >
-      <p className={styles.excerpt}>{excerpt}</p>
+      <p className={styles.excerpt} style={excerptStyle}>
+        {excerpt}
+      </p>
     </div>
   );
 }
 
-function FooterBlock({ sourceName }: { sourceName: string }) {
+function FooterBlock() {
   return (
     <footer className={styles.footer}>
-      {sourceName ? (
-        <span className={styles.footerSource}>{sourceName}</span>
-      ) : (
-        <span className={styles.footerSourceSpacer} aria-hidden="true" />
-      )}
       <img
         className={styles.footerObbLogo}
         src={OBB_BRAND_LOGO_URL}
@@ -194,7 +243,6 @@ function ImageBlock({ imageUrl }: { imageUrl: string }) {
 export function StandardArticleCard({
   format,
   layout,
-  sourceName,
   headline,
   subhead,
   excerpt,
@@ -204,6 +252,7 @@ export function StandardArticleCard({
   imageUrl,
   headlineFontSize,
   excerptFontSize,
+  excerptLineClamp = 0,
   showImage,
   className,
   id,
@@ -232,7 +281,7 @@ export function StandardArticleCard({
   const inlineLogo = layout.logoPlacement === 'inlineAboveHeadline';
   const containerClass = [
     styles.articleContainer,
-    split ? styles.splitLayout : '',
+    split ? styles.splitLayout : styles.stackedAdaptive,
     imageOnLeft ? styles.splitImageLeft : '',
     !showImage ? styles.noImage : '',
   ]
@@ -243,6 +292,7 @@ export function StandardArticleCard({
     <HeadlineBlock
       headline={headline}
       headlineFontSize={headlineFontSize}
+      headlineMaxCapHeight={zones.headlineZone.height}
       headlineZoneRef={headlineZoneRef}
     />
   );
@@ -251,11 +301,12 @@ export function StandardArticleCard({
     <ExcerptBlock
       excerpt={excerpt}
       excerptFontSize={excerptFontSize}
+      excerptLineClamp={excerptLineClamp}
       excerptZoneRef={excerptZoneRef}
     />
   );
 
-  const footerBlock = <FooterBlock sourceName={sourceName} />;
+  const footerBlock = <FooterBlock />;
 
   const stackedBlocks = (
     <>
@@ -295,7 +346,7 @@ export function StandardArticleCard({
         height: format.height,
         backgroundImage: backgroundUrl ? `url(${backgroundUrl})` : undefined,
         backgroundColor: backgroundFallbackColor,
-        ...layoutCssVariables(layout, format, showImage, zones),
+        ...layoutCssVariables(layout, format, showImage, hasLogo, zones),
       }}
       aria-label="Social card preview"
     >

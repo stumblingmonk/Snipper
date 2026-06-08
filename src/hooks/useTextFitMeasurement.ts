@@ -2,8 +2,14 @@ import { useLayoutEffect, useState } from 'react';
 import type { FormatKey, ImageMode } from '@/constants/formats';
 import type { TextSizeStep } from '@/constants/textFit';
 import { preferredFontSize } from '@/constants/textFit';
+import type { PreviewZoneMetrics } from '@/context/PreviewZoneMetricsContext';
 import { getStandardArticleLayout } from '@/constants/standardArticleLayouts';
-import { measureTextFit } from '@/utils/textFitMeasure';
+import {
+  computeExcerptLineClamp,
+  DEFAULT_EXCERPT_OFFSCREEN_STYLE,
+  measureTextFit,
+  measureTextFitOffscreen,
+} from '@/utils/textFitMeasure';
 import { resolveSourceLogoUrl, resolveSourceNameForCard } from '@/store/selectors';
 import { useSnipperStore } from '@/store/snipperStore';
 
@@ -19,6 +25,7 @@ interface UseTextFitMeasurementOptions {
   headlineAutoFit: boolean;
   excerptAutoFit: boolean;
   imageMode: ImageMode;
+  onPreviewZoneMetrics?: (metrics: PreviewZoneMetrics) => void;
 }
 
 export function useTextFitMeasurement({
@@ -33,6 +40,7 @@ export function useTextFitMeasurement({
   headlineAutoFit,
   excerptAutoFit,
   imageMode,
+  onPreviewZoneMetrics,
 }: UseTextFitMeasurementOptions): boolean {
   const setTextFitResult = useSnipperStore((s) => s.setTextFitResult);
   const logoUrl = useSnipperStore(resolveSourceLogoUrl);
@@ -55,43 +63,76 @@ export function useTextFitMeasurement({
   useLayoutEffect(() => {
     if (!fontsReady) return;
 
-    const headlineZone = headlineZoneRef.current;
-    const excerptZone = excerptZoneRef.current;
-    if (!headlineZone || !excerptZone) return;
+    let cancelled = false;
+    let retryFrame = 0;
 
-    const layout = getStandardArticleLayout(formatKey);
+    const runMeasurement = () => {
+      if (cancelled) return;
 
-    const headlinePreferred = preferredFontSize(
-      headlineSizeStep,
-      layout.headlineTypo,
-    );
-    const excerptPreferred = preferredFontSize(
-      excerptSizeStep,
-      layout.excerptTypo,
-    );
+      const headlineZone = headlineZoneRef.current;
+      const excerptZone = excerptZoneRef.current;
+      if (!headlineZone || !excerptZone) return;
 
-    const headlineResult = measureTextFit({
-      text: headline,
-      preferredSize: headlinePreferred,
-      autoFit: headlineAutoFit,
-      bounds: layout.headlineTypo,
-      zoneElement: headlineZone,
-    });
+      const excerptWidth = excerptZone.clientWidth;
+      const excerptHeight = excerptZone.clientHeight;
+      if (excerptHeight <= 0) {
+        retryFrame = window.requestAnimationFrame(runMeasurement);
+        return;
+      }
 
-    const excerptResult = measureTextFit({
-      text: excerpt,
-      preferredSize: excerptPreferred,
-      autoFit: excerptAutoFit,
-      bounds: layout.excerptTypo,
-      zoneElement: excerptZone,
-    });
+      onPreviewZoneMetrics?.({ excerptWidth, excerptHeight });
 
-    setTextFitResult({
-      headlineResolvedFontSize: headlineResult.resolvedSize,
-      headlineFitStatus: headlineResult.status,
-      excerptResolvedFontSize: excerptResult.resolvedSize,
-      excerptFitStatus: excerptResult.status,
-    });
+      const layout = getStandardArticleLayout(formatKey);
+
+      const headlinePreferred = preferredFontSize(
+        headlineSizeStep,
+        layout.headlineTypo,
+      );
+      const excerptPreferred = preferredFontSize(
+        excerptSizeStep,
+        layout.excerptTypo,
+      );
+
+      const headlineResult = measureTextFit({
+        text: headline,
+        preferredSize: headlinePreferred,
+        autoFit: headlineAutoFit,
+        bounds: layout.headlineTypo,
+        zoneElement: headlineZone,
+      });
+
+      const excerptResult = measureTextFitOffscreen({
+        text: excerpt,
+        preferredSize: excerptPreferred,
+        autoFit: excerptAutoFit,
+        bounds: layout.excerptTypo,
+        style: {
+          ...DEFAULT_EXCERPT_OFFSCREEN_STYLE,
+          width: excerptWidth,
+          height: excerptHeight,
+        },
+      });
+
+      const excerptLineClamp = computeExcerptLineClamp(
+        excerptHeight,
+        excerptResult.resolvedSize,
+      );
+
+      setTextFitResult({
+        headlineResolvedFontSize: headlineResult.resolvedSize,
+        headlineFitStatus: headlineResult.status,
+        excerptResolvedFontSize: excerptResult.resolvedSize,
+        excerptFitStatus: excerptResult.status,
+        excerptLineClamp,
+      });
+    };
+
+    retryFrame = window.requestAnimationFrame(runMeasurement);
+
+    return () => {
+      cancelled = true;
+      window.cancelAnimationFrame(retryFrame);
+    };
   }, [
     fontsReady,
     formatKey,
@@ -108,6 +149,7 @@ export function useTextFitMeasurement({
     headlineZoneRef,
     excerptZoneRef,
     setTextFitResult,
+    onPreviewZoneMetrics,
   ]);
 
   return fontsReady;

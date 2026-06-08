@@ -99,8 +99,7 @@ function drawFitMode(
   srcAspect: number,
   dstAspect: number,
 ): void {
-  ctx.fillStyle = '#eef0f3';
-  ctx.fillRect(0, 0, outputWidth, outputHeight);
+  ctx.clearRect(0, 0, outputWidth, outputHeight);
 
   let drawWidth = outputWidth;
   let drawHeight = outputHeight;

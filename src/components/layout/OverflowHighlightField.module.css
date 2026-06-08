@@ -7,6 +7,10 @@
   background: var(--panel-bg-raised);
 }
 
+.fieldWrapTooLong {
+  border-color: var(--error);
+}
+
 .highlightLayer {
   position: absolute;
   inset: 0;
@@ -17,24 +21,6 @@
   overflow-wrap: anywhere;
   word-break: break-word;
   color: var(--text-primary);
-}
-
-.highlightLayerInput {
-  composes: highlightLayer;
-  font-size: 14px;
-  line-height: 1.45;
-}
-
-.highlightLayerTextarea {
-  composes: highlightLayer;
-  font-size: 14px;
-  line-height: 1.45;
-}
-
-.overflow {
-  color: var(--error);
-  background: var(--error-soft);
-  border-radius: 2px;
 }
 
 .inputBase,
@@ -56,6 +42,48 @@
 
 .textareaBase {
   resize: vertical;
+}
+
+.headlineEditor {
+  min-height: 72px;
+  max-height: 120px;
+  overflow-y: auto;
+  line-height: 1.4;
+}
+
+.highlightLayerInput {
+  composes: highlightLayer;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.highlightLayerTextarea {
+  composes: highlightLayer;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.overflow {
+  color: var(--error);
+  background: var(--error-soft);
+  border-radius: 2px;
+}
+
+.textareaHeadline {
+  composes: textareaBase headlineEditor;
+  font-size: 14px;
+  resize: vertical;
+}
+
+.textareaHeadlinePlain {
+  composes: textareaHeadline;
+  background: var(--panel-bg-raised);
+  color: var(--text-primary);
+}
+
+.textareaHeadlinePlain:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
 }
 
 .inputOverlay {

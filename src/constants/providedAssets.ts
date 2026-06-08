@@ -1,9 +1,9 @@
 /** Paths to provided SNIPPER handoff assets served from /public. */
 export const PROVIDED_BACKGROUNDS = {
-  story: '/assets/backgrounds/story.jpg',
-  square: '/assets/backgrounds/square.jpg',
-  portrait: '/assets/backgrounds/portrait.jpg',
-  linkedin: '/assets/backgrounds/linkedin.jpg',
+  story: '/backgrounds/paper/story_1080x1920.jpg',
+  square: '/backgrounds/paper/square_1080x1080.jpg',
+  portrait: '/backgrounds/paper/portrait_1080x1350.jpg',
+  linkedin: '/backgrounds/paper/linkedin_1200x627.jpg',
 } as const;
 
 export const DEFAULT_ARTICLE_IMAGE =

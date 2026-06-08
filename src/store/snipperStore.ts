@@ -56,6 +56,7 @@ export interface TextFitResult {
   headlineFitStatus: FitStatus;
   excerptResolvedFontSize: number;
   excerptFitStatus: FitStatus;
+  excerptLineClamp: number;
 }
 
 export interface SnipperState {
@@ -68,6 +69,7 @@ export interface SnipperState {
   excerptFitStatus: FitStatus;
   headlineResolvedFontSize: number;
   excerptResolvedFontSize: number;
+  excerptLineClamp: number;
   selectedBuiltinLogoId: string | null;
   sourceLogoObjectUrl: string | null;
   sourceLogoHidden: boolean;
@@ -147,6 +149,7 @@ export const useSnipperStore = create<SnipperState>((set, get) => ({
   excerptFitStatus: 'fits',
   headlineResolvedFontSize: HEADLINE_TYPO.default,
   excerptResolvedFontSize: EXCERPT_TYPO.default,
+  excerptLineClamp: 0,
   selectedBuiltinLogoId: getDefaultBuiltinSourceLogoId(),
   sourceLogoObjectUrl: null,
   sourceLogoHidden: false,
@@ -178,7 +181,8 @@ export const useSnipperStore = create<SnipperState>((set, get) => ({
       state.headlineResolvedFontSize === result.headlineResolvedFontSize &&
       state.headlineFitStatus === result.headlineFitStatus &&
       state.excerptResolvedFontSize === result.excerptResolvedFontSize &&
-      state.excerptFitStatus === result.excerptFitStatus
+      state.excerptFitStatus === result.excerptFitStatus &&
+      state.excerptLineClamp === result.excerptLineClamp
     ) {
       return;
     }
@@ -207,6 +211,7 @@ export const useSnipperStore = create<SnipperState>((set, get) => ({
       excerptResolvedFontSize: preferredFontSize(0, layout.excerptTypo),
       headlineFitStatus: 'fits',
       excerptFitStatus: 'fits',
+      excerptLineClamp: 0,
     });
   },
   setFormat: (format) => set({ format }),

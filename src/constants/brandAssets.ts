@@ -5,8 +5,8 @@ export const OBB_BRAND_LOGO_URL = '/brand/obb.svg';
 
 /** Footer OBB mark width per format (px). */
 export const OBB_FOOTER_LOGO_WIDTH: Record<FormatKey, number> = {
-  story: 96,
-  square: 84,
-  portrait: 90,
-  linkedin: 72,
+  story: 220,
+  portrait: 195,
+  square: 180,
+  linkedin: 160,
 };

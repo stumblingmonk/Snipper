@@ -34,7 +34,7 @@ export const STORY_TEXT_ZONES = {
 
 export const TEXT_SIZE_STEPS: TextSizeStep[] = [-2, -1, 0, 1, 2];
 
-export const OVERFLOW_TOLERANCE_PX = 1;
+export const OVERFLOW_TOLERANCE_PX = 3;
 
 /** Sizes at or below min + this many px count as Tight in Auto-Fit mode. */
 export const TIGHT_THRESHOLD_PX = 4;

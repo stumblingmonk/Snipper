@@ -1,4 +1,9 @@
 import {
+  CARD_EXCERPT_LETTER_SPACING,
+  CARD_EXCERPT_LINE_HEIGHT,
+} from '@/constants/cardTypography';
+import { visibleHeightFromLineClamp } from '@/utils/textFitMeasure';
+import {
   computeTextOverflowSplitIndex,
   type TextOverflowMeasureStyle,
 } from '@/utils/textOverflowPreview';
@@ -18,8 +23,10 @@ function excerptMeasureStyle(
   return {
     fontFamily: '"IBM Plex Sans", sans-serif',
     fontSize,
-    fontWeight: 400,
-    lineHeight: 1.36,
+    fontWeight: 500,
+    lineHeight: CARD_EXCERPT_LINE_HEIGHT,
+    letterSpacing: CARD_EXCERPT_LETTER_SPACING,
+    whiteSpace: 'pre-line',
     width,
     height,
   };
@@ -27,7 +34,7 @@ function excerptMeasureStyle(
 
 /**
  * UI-only: index in the original string where excerpt zone overflow begins.
- * Returns null when text fits or is empty.
+ * Returns null when text fits, is empty, or zone dimensions are invalid.
  */
 export function computeExcerptOverflowSplitIndex(
   text: string,
@@ -35,6 +42,7 @@ export function computeExcerptOverflowSplitIndex(
   width: number,
   height: number,
 ): number | null {
+  if (width <= 0 || height <= 0) return null;
   return computeTextOverflowSplitIndex(
     text,
     excerptMeasureStyle(fontSize, width, height),
@@ -63,4 +71,13 @@ export function splitExcerptAtZoneOverflow(
     fitting: text.slice(0, splitIndex),
     overflow,
   };
+}
+
+/** Capacity height derived from preview line clamp + resolved font size. */
+export function excerptCapacityHeightFromLineClamp(
+  lineClamp: number,
+  fontSize: number,
+  lineHeight: number = CARD_EXCERPT_LINE_HEIGHT,
+): number {
+  return visibleHeightFromLineClamp(lineClamp, fontSize, lineHeight);
 }

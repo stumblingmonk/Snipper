@@ -13,8 +13,8 @@
   padding: 10px 12px;
   overflow: hidden;
   pointer-events: none;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
+  white-space: pre-line;
+  overflow-wrap: break-word;
   word-break: break-word;
   font-size: 14px;
   line-height: 1.5;
@@ -38,6 +38,9 @@
   border-radius: 8px;
   font-size: 14px;
   line-height: 1.5;
+  white-space: pre-line;
+  overflow-wrap: break-word;
+  word-break: break-word;
   resize: vertical;
   overflow: auto;
 }
