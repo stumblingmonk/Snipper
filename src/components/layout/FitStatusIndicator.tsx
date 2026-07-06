@@ -1,5 +1,5 @@
 import type { FitStatus } from '@/constants/textFit';
-import { useSnipitStore } from '@/store/snipitStore';
+import { useSnipitStore, selectActivePage } from '@/store/snipitStore';
 import styles from './FitStatusIndicator.module.css';
 
 interface InlineFitStatusProps {
@@ -33,17 +33,19 @@ function statusClassName(status: FitStatus): string {
 }
 
 export function InlineFitStatus({ field }: InlineFitStatusProps) {
-  const status = useSnipitStore((s) =>
-    field === 'headline' ? s.headlineFitStatus : s.excerptFitStatus,
+  const activePage = useSnipitStore(selectActivePage);
+  const headlineResolvedFontSize = useSnipitStore(
+    (s) => s.headlineResolvedFontSize,
   );
-  const resolvedSize = useSnipitStore((s) =>
+  const headlineFitStatus = useSnipitStore((s) => s.headlineFitStatus);
+  const headlineAutoFit = useSnipitStore((s) => s.headlineAutoFit);
+
+  const status = field === 'headline' ? headlineFitStatus : activePage.excerptFitStatus;
+  const resolvedSize =
     field === 'headline'
-      ? s.headlineResolvedFontSize
-      : s.excerptResolvedFontSize,
-  );
-  const autoFit = useSnipitStore((s) =>
-    field === 'headline' ? s.headlineAutoFit : s.excerptAutoFit,
-  );
+      ? headlineResolvedFontSize
+      : activePage.excerptResolvedFontSize;
+  const autoFit = field === 'headline' ? headlineAutoFit : activePage.excerptAutoFit;
 
   const modeLabel = autoFit ? 'Auto-fit' : 'Manual';
 

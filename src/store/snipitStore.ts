@@ -36,6 +36,12 @@ import {
   type FitStatus,
   type TextSizeStep,
 } from '@/constants/textFit';
+import {
+  type ArticlePage,
+  MAX_ARTICLE_PAGES,
+  cloneArticlePage,
+  createDefaultArticlePage,
+} from '@/types/articlePage';
 
 /** Default content seeded from project handoff copy and assets. */
 export const DEFAULT_CONTENT = {
@@ -60,50 +66,44 @@ export interface TextFitResult {
   excerptLineClamp: number;
 }
 
+export interface ExportProgress {
+  completed: number;
+  total: number;
+  detail: string;
+}
+
 export interface SnipitState {
   format: FormatKey;
+  pages: ArticlePage[];
+  activePageIndex: number;
   headlineSizeStep: TextSizeStep;
-  excerptSizeStep: TextSizeStep;
   headlineAutoFit: boolean;
-  excerptAutoFit: boolean;
   headlineFitStatus: FitStatus;
-  excerptFitStatus: FitStatus;
   headlineResolvedFontSize: number;
-  excerptResolvedFontSize: number;
-  excerptLineClamp: number;
   selectedBuiltinLogoId: string | null;
   sourceLogoObjectUrl: string | null;
   sourceLogoHidden: boolean;
   showSource: boolean;
   selectedBrandLogoId: string;
   selectedBackgroundPackId: string;
-  articleImageObjectUrl: string | null;
-  uploadedArticleImageObjectUrl: string | null;
-  flattenedCropUrl: string | null;
-  imageMode: ImageMode;
-  articleImageBw: boolean;
-  cropZoom: number;
-  cropOffsetX: number;
-  cropOffsetY: number;
   exportStatus: 'idle' | 'exporting' | 'done' | 'error';
   exportError: string | null;
+  exportProgress: ExportProgress | null;
   lastExportSize: { width: number; height: number } | null;
   sourceUrl: string;
   sourceName: string;
   headline: string;
   subhead: string;
-  excerpt: string;
   scratchpad: string;
   scratchpadSelection: ScratchpadSelection;
   caption: string;
   byline: string;
   articleDate: string;
-  attribution: string;
   showByline: boolean;
   showArticleDate: boolean;
+  attribution: string;
   showAttribution: boolean;
   logoUploadError: string | null;
-  articleImageUploadError: string | null;
   setTextFitResult: (result: TextFitResult) => void;
   adjustHeadlineSizeStep: (delta: number) => void;
   adjustExcerptSizeStep: (delta: number) => void;
@@ -117,6 +117,7 @@ export interface SnipitState {
     error?: string | null,
     size?: { width: number; height: number } | null,
   ) => void;
+  setExportProgress: (progress: ExportProgress | null) => void;
   setSourceUrl: (sourceUrl: string) => void;
   setSourceName: (sourceName: string) => void;
   setShowSource: (showSource: boolean) => void;
@@ -147,7 +148,14 @@ export interface SnipitState {
   clearUploadedArticleImage: () => void;
   useSelectedAsExcerpt: () => void;
   appendSelectedToExcerpt: () => void;
+  addSelectionAsNewPage: () => void;
   clearScratchpad: () => void;
+  addPage: () => void;
+  duplicatePage: () => void;
+  deletePage: () => void;
+  setActivePageIndex: (index: number) => void;
+  goToPrevPage: () => void;
+  goToNextPage: () => void;
 }
 
 function revokeIfBlob(url: string | null): void {
@@ -156,62 +164,78 @@ function revokeIfBlob(url: string | null): void {
   }
 }
 
+function revokePageResources(page: ArticlePage): void {
+  revokeIfBlob(page.uploadedArticleImageObjectUrl);
+  revokeIfBlob(page.flattenedCropUrl);
+}
+
+function updateActivePage(
+  pages: ArticlePage[],
+  activePageIndex: number,
+  patch: Partial<ArticlePage>,
+): ArticlePage[] {
+  return pages.map((page, index) =>
+    index === activePageIndex ? { ...page, ...patch } : page,
+  );
+}
+
+function getActivePage(state: SnipitState): ArticlePage {
+  return state.pages[state.activePageIndex] ?? state.pages[0];
+}
+
 export const useSnipitStore = create<SnipitState>((set, get) => ({
   format: 'story',
+  pages: [createDefaultArticlePage()],
+  activePageIndex: 0,
   headlineSizeStep: 0,
-  excerptSizeStep: 0,
   headlineAutoFit: true,
-  excerptAutoFit: false,
   headlineFitStatus: 'fits',
-  excerptFitStatus: 'fits',
   headlineResolvedFontSize: HEADLINE_TYPO.default,
-  excerptResolvedFontSize: EXCERPT_TYPO.default,
-  excerptLineClamp: 0,
   selectedBuiltinLogoId: getDefaultBuiltinSourceLogoId(),
   sourceLogoObjectUrl: null,
   sourceLogoHidden: false,
   showSource: true,
   selectedBrandLogoId: getDefaultBrandLogoId(),
   selectedBackgroundPackId: DEFAULT_BACKGROUND_PACK_ID,
-  articleImageObjectUrl: DEFAULT_CONTENT.articleImageUrl,
-  uploadedArticleImageObjectUrl: null,
-  flattenedCropUrl: null,
-  imageMode: 'crop',
-  articleImageBw: false,
-  cropZoom: DEFAULT_CROP_SETTINGS.zoom,
-  cropOffsetX: DEFAULT_CROP_SETTINGS.offsetX,
-  cropOffsetY: DEFAULT_CROP_SETTINGS.offsetY,
   exportStatus: 'idle',
   exportError: null,
+  exportProgress: null,
   lastExportSize: null,
   sourceUrl: DEFAULT_CONTENT.sourceUrl,
   sourceName: DEFAULT_CONTENT.sourceName,
   headline: DEFAULT_CONTENT.headline,
   subhead: DEFAULT_CONTENT.subhead,
-  excerpt: DEFAULT_CONTENT.excerpt,
   scratchpad: DEFAULT_CONTENT.scratchpad,
   scratchpadSelection: EMPTY_SELECTION,
   caption: DEFAULT_CONTENT.caption,
   byline: DEFAULT_CONTENT.byline,
   articleDate: DEFAULT_CONTENT.articleDate,
-  attribution: DEFAULT_CONTENT.attribution,
   showByline: false,
   showArticleDate: false,
+  attribution: DEFAULT_CONTENT.attribution,
   showAttribution: false,
   logoUploadError: null,
-  articleImageUploadError: null,
   setTextFitResult: (result) => {
     const state = get();
+    const activePage = getActivePage(state);
     if (
       state.headlineResolvedFontSize === result.headlineResolvedFontSize &&
       state.headlineFitStatus === result.headlineFitStatus &&
-      state.excerptResolvedFontSize === result.excerptResolvedFontSize &&
-      state.excerptFitStatus === result.excerptFitStatus &&
-      state.excerptLineClamp === result.excerptLineClamp
+      activePage.excerptResolvedFontSize === result.excerptResolvedFontSize &&
+      activePage.excerptFitStatus === result.excerptFitStatus &&
+      activePage.excerptLineClamp === result.excerptLineClamp
     ) {
       return;
     }
-    set(result);
+    set({
+      headlineResolvedFontSize: result.headlineResolvedFontSize,
+      headlineFitStatus: result.headlineFitStatus,
+      pages: updateActivePage(state.pages, state.activePageIndex, {
+        excerptResolvedFontSize: result.excerptResolvedFontSize,
+        excerptFitStatus: result.excerptFitStatus,
+        excerptLineClamp: result.excerptLineClamp,
+      }),
+    });
   },
   adjustHeadlineSizeStep: (delta) =>
     set((state) => ({
@@ -220,35 +244,55 @@ export const useSnipitStore = create<SnipitState>((set, get) => ({
     })),
   adjustExcerptSizeStep: (delta) =>
     set((state) => ({
-      excerptSizeStep: clampTextSizeStep(state.excerptSizeStep + delta),
-      excerptAutoFit: false,
+      pages: updateActivePage(state.pages, state.activePageIndex, {
+        excerptSizeStep: clampTextSizeStep(
+          getActivePage(state).excerptSizeStep + delta,
+        ),
+        excerptAutoFit: false,
+      }),
     })),
   setHeadlineAutoFit: (headlineAutoFit) => set({ headlineAutoFit }),
-  setExcerptAutoFit: (excerptAutoFit) => set({ excerptAutoFit }),
+  setExcerptAutoFit: (excerptAutoFit) =>
+    set((state) => ({
+      pages: updateActivePage(state.pages, state.activePageIndex, {
+        excerptAutoFit,
+      }),
+    })),
   resetTextControls: () => {
     const layout = getStandardArticleLayout(get().format);
-    set({
+    set((state) => ({
       headlineSizeStep: 0,
-      excerptSizeStep: 0,
       headlineAutoFit: true,
-      excerptAutoFit: false,
       headlineResolvedFontSize: preferredFontSize(0, layout.headlineTypo),
-      excerptResolvedFontSize: preferredFontSize(0, layout.excerptTypo),
       headlineFitStatus: 'fits',
-      excerptFitStatus: 'fits',
-      excerptLineClamp: 0,
-    });
+      pages: updateActivePage(state.pages, state.activePageIndex, {
+        excerptSizeStep: 0,
+        excerptAutoFit: false,
+        excerptResolvedFontSize: preferredFontSize(0, layout.excerptTypo),
+        excerptFitStatus: 'fits',
+        excerptLineClamp: 0,
+      }),
+    }));
   },
   setFormat: (format) => set({ format }),
   setFlattenedCropUrl: (flattenedCropUrl) => {
-    const previous = get().flattenedCropUrl;
-    if (previous && previous !== flattenedCropUrl) {
-      revokeIfBlob(previous);
+    const state = get();
+    const activePage = getActivePage(state);
+    if (
+      activePage.flattenedCropUrl &&
+      activePage.flattenedCropUrl !== flattenedCropUrl
+    ) {
+      revokeIfBlob(activePage.flattenedCropUrl);
     }
-    set({ flattenedCropUrl });
+    set({
+      pages: updateActivePage(state.pages, state.activePageIndex, {
+        flattenedCropUrl,
+      }),
+    });
   },
   setExportStatus: (exportStatus, exportError = null, lastExportSize = null) =>
     set({ exportStatus, exportError, lastExportSize }),
+  setExportProgress: (exportProgress) => set({ exportProgress }),
   setSourceUrl: (sourceUrl) => set({ sourceUrl }),
   setSourceName: (sourceName) => set({ sourceName }),
   setShowSource: (showSource) => set({ showSource }),
@@ -256,7 +300,10 @@ export const useSnipitStore = create<SnipitState>((set, get) => ({
     set({ selectedBackgroundPackId }),
   setHeadline: (headline) => set({ headline }),
   setSubhead: (subhead) => set({ subhead }),
-  setExcerpt: (excerpt) => set({ excerpt }),
+  setExcerpt: (excerpt) =>
+    set((state) => ({
+      pages: updateActivePage(state.pages, state.activePageIndex, { excerpt }),
+    })),
   setScratchpad: (scratchpad) => set({ scratchpad }),
   setScratchpadSelection: (scratchpadSelection) => set({ scratchpadSelection }),
   setCaption: (caption) => set({ caption }),
@@ -310,72 +357,204 @@ export const useSnipitStore = create<SnipitState>((set, get) => ({
     });
   },
   selectBrandLogo: (logoId) => set({ selectedBrandLogoId: logoId }),
-  setImageMode: (imageMode) => set({ imageMode }),
-  setArticleImageBw: (articleImageBw) => set({ articleImageBw }),
-  setCropZoom: (cropZoom) => set({ cropZoom: clampCropZoom(cropZoom) }),
-  setCropOffsetX: (cropOffsetX) => set({ cropOffsetX: clampCropOffset(cropOffsetX) }),
-  setCropOffsetY: (cropOffsetY) => set({ cropOffsetY: clampCropOffset(cropOffsetY) }),
+  setImageMode: (imageMode) =>
+    set((state) => ({
+      pages: updateActivePage(state.pages, state.activePageIndex, { imageMode }),
+    })),
+  setArticleImageBw: (articleImageBw) =>
+    set((state) => ({
+      pages: updateActivePage(state.pages, state.activePageIndex, {
+        articleImageBw,
+      }),
+    })),
+  setCropZoom: (cropZoom) =>
+    set((state) => ({
+      pages: updateActivePage(state.pages, state.activePageIndex, {
+        cropZoom: clampCropZoom(cropZoom),
+      }),
+    })),
+  setCropOffsetX: (cropOffsetX) =>
+    set((state) => ({
+      pages: updateActivePage(state.pages, state.activePageIndex, {
+        cropOffsetX: clampCropOffset(cropOffsetX),
+      }),
+    })),
+  setCropOffsetY: (cropOffsetY) =>
+    set((state) => ({
+      pages: updateActivePage(state.pages, state.activePageIndex, {
+        cropOffsetY: clampCropOffset(cropOffsetY),
+      }),
+    })),
   resetCrop: () =>
-    set({
-      cropZoom: DEFAULT_CROP_SETTINGS.zoom,
-      cropOffsetX: DEFAULT_CROP_SETTINGS.offsetX,
-      cropOffsetY: DEFAULT_CROP_SETTINGS.offsetY,
-    }),
-  uploadArticleImage: (file) => {
-    try {
-      const { uploadedArticleImageObjectUrl } = get();
-      revokeIfBlob(uploadedArticleImageObjectUrl);
-
-      const objectUrl = createArticleImageObjectUrl(file);
-      set({
-        uploadedArticleImageObjectUrl: objectUrl,
-        articleImageObjectUrl: objectUrl,
-        articleImageUploadError: null,
+    set((state) => ({
+      pages: updateActivePage(state.pages, state.activePageIndex, {
         cropZoom: DEFAULT_CROP_SETTINGS.zoom,
         cropOffsetX: DEFAULT_CROP_SETTINGS.offsetX,
         cropOffsetY: DEFAULT_CROP_SETTINGS.offsetY,
+      }),
+    })),
+  uploadArticleImage: (file) => {
+    try {
+      const state = get();
+      const activePage = getActivePage(state);
+      revokeIfBlob(activePage.uploadedArticleImageObjectUrl);
+
+      const objectUrl = createArticleImageObjectUrl(file);
+      set({
+        pages: updateActivePage(state.pages, state.activePageIndex, {
+          uploadedArticleImageObjectUrl: objectUrl,
+          articleImageObjectUrl: objectUrl,
+          articleImageUploadError: null,
+          cropZoom: DEFAULT_CROP_SETTINGS.zoom,
+          cropOffsetX: DEFAULT_CROP_SETTINGS.offsetX,
+          cropOffsetY: DEFAULT_CROP_SETTINGS.offsetY,
+        }),
       });
     } catch (err) {
       const message =
         err instanceof Error ? err.message : 'Article image upload failed';
-      set({ articleImageUploadError: message });
+      set((state) => ({
+        pages: updateActivePage(state.pages, state.activePageIndex, {
+          articleImageUploadError: message,
+        }),
+      }));
     }
   },
   clearUploadedArticleImage: () => {
-    const { uploadedArticleImageObjectUrl } = get();
-    revokeIfBlob(uploadedArticleImageObjectUrl);
+    const state = get();
+    const activePage = getActivePage(state);
+    revokeIfBlob(activePage.uploadedArticleImageObjectUrl);
 
     set({
-      uploadedArticleImageObjectUrl: null,
-      articleImageObjectUrl: DEFAULT_CONTENT.articleImageUrl,
-      articleImageUploadError: null,
-      cropZoom: DEFAULT_CROP_SETTINGS.zoom,
-      cropOffsetX: DEFAULT_CROP_SETTINGS.offsetX,
-      cropOffsetY: DEFAULT_CROP_SETTINGS.offsetY,
+      pages: updateActivePage(state.pages, state.activePageIndex, {
+        uploadedArticleImageObjectUrl: null,
+        articleImageObjectUrl: DEFAULT_CONTENT.articleImageUrl,
+        articleImageUploadError: null,
+        cropZoom: DEFAULT_CROP_SETTINGS.zoom,
+        cropOffsetX: DEFAULT_CROP_SETTINGS.offsetX,
+        cropOffsetY: DEFAULT_CROP_SETTINGS.offsetY,
+      }),
     });
   },
   useSelectedAsExcerpt: () => {
     const { scratchpadSelection } = get();
     if (!scratchpadSelection.text) return;
-    set({ excerpt: scratchpadSelection.text });
+    get().setExcerpt(scratchpadSelection.text);
   },
   appendSelectedToExcerpt: () => {
-    const { excerpt, scratchpadSelection } = get();
+    const state = get();
+    const { scratchpadSelection } = state;
     if (!scratchpadSelection.text) return;
-    set({ excerpt: appendWithSpacing(excerpt, scratchpadSelection.text) });
+    get().setExcerpt(
+      appendWithSpacing(getActivePage(state).excerpt, scratchpadSelection.text),
+    );
+  },
+  addSelectionAsNewPage: () => {
+    const state = get();
+    const { scratchpadSelection, pages } = state;
+    if (!scratchpadSelection.text || pages.length >= MAX_ARTICLE_PAGES) return;
+
+    const newPage = createDefaultArticlePage({
+      excerpt: scratchpadSelection.text,
+      excerptSizeStep: 0,
+      excerptAutoFit: false,
+      excerptResolvedFontSize: EXCERPT_TYPO.default,
+      excerptFitStatus: 'fits',
+      excerptLineClamp: 0,
+      articleImageObjectUrl: DEFAULT_CONTENT.articleImageUrl,
+      uploadedArticleImageObjectUrl: null,
+      flattenedCropUrl: null,
+      imageMode: 'crop',
+      articleImageBw: false,
+      cropZoom: DEFAULT_CROP_SETTINGS.zoom,
+      cropOffsetX: DEFAULT_CROP_SETTINGS.offsetX,
+      cropOffsetY: DEFAULT_CROP_SETTINGS.offsetY,
+    });
+
+    set({
+      pages: [...pages, newPage],
+      activePageIndex: pages.length,
+    });
   },
   clearScratchpad: () =>
     set({ scratchpad: '', scratchpadSelection: EMPTY_SELECTION }),
+  addPage: () => {
+    const { pages } = get();
+    if (pages.length >= MAX_ARTICLE_PAGES) return;
+    const newPage = createDefaultArticlePage({
+      excerpt: '',
+      articleImageObjectUrl: DEFAULT_CONTENT.articleImageUrl,
+      uploadedArticleImageObjectUrl: null,
+      flattenedCropUrl: null,
+    });
+    set({
+      pages: [...pages, newPage],
+      activePageIndex: pages.length,
+    });
+  },
+  duplicatePage: () => {
+    const state = get();
+    if (state.pages.length >= MAX_ARTICLE_PAGES) return;
+    const sourcePage = getActivePage(state);
+    const duplicate = cloneArticlePage(sourcePage);
+    const pages = [...state.pages];
+    pages.splice(state.activePageIndex + 1, 0, duplicate);
+    set({
+      pages,
+      activePageIndex: state.activePageIndex + 1,
+    });
+  },
+  deletePage: () => {
+    const state = get();
+    if (state.pages.length <= 1) return;
+    const removed = getActivePage(state);
+    revokePageResources(removed);
+    const pages = state.pages.filter((_, index) => index !== state.activePageIndex);
+    set({
+      pages,
+      activePageIndex: Math.min(state.activePageIndex, pages.length - 1),
+    });
+  },
+  setActivePageIndex: (index) => {
+    const { pages } = get();
+    if (index < 0 || index >= pages.length) return;
+    set({ activePageIndex: index });
+  },
+  goToPrevPage: () => {
+    const { activePageIndex } = get();
+    if (activePageIndex > 0) {
+      set({ activePageIndex: activePageIndex - 1 });
+    }
+  },
+  goToNextPage: () => {
+    const { activePageIndex, pages } = get();
+    if (activePageIndex < pages.length - 1) {
+      set({ activePageIndex: activePageIndex + 1 });
+    }
+  },
 }));
 
 export const selectHasScratchpadSelection = (state: SnipitState): boolean =>
   state.scratchpadSelection.text.length > 0;
 
-export const selectCropSettings = (state: SnipitState): CropSettings => ({
-  zoom: state.cropZoom,
-  offsetX: state.cropOffsetX,
-  offsetY: state.cropOffsetY,
-});
+export const selectActivePage = (state: SnipitState): ArticlePage =>
+  state.pages[state.activePageIndex] ?? state.pages[0];
+
+export const selectCropSettings = (state: SnipitState): CropSettings => {
+  const page = selectActivePage(state);
+  return {
+    zoom: page.cropZoom,
+    offsetX: page.cropOffsetX,
+    offsetY: page.cropOffsetY,
+  };
+};
 
 export const selectHasUploadedArticleImage = (state: SnipitState): boolean =>
-  state.uploadedArticleImageObjectUrl !== null;
+  selectActivePage(state).uploadedArticleImageObjectUrl !== null;
+
+export function selectPageAt(
+  state: SnipitState,
+  pageIndex: number,
+): ArticlePage {
+  return state.pages[pageIndex] ?? state.pages[0];
+}

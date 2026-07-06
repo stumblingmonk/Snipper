@@ -43,3 +43,13 @@ export const STORY_FORMAT = FORMATS.story;
 export function getFormatExportFilename(formatKey: FormatKey): string {
   return `snipit-${formatKey}-export.png`;
 }
+
+export function getCarouselExportFilename(
+  formatKey: FormatKey,
+  pageNumber: number,
+  totalPages: number,
+): string {
+  const pagePart = String(pageNumber).padStart(2, '0');
+  const totalPart = String(totalPages).padStart(2, '0');
+  return `snipit-${formatKey}-page${pagePart}-of${totalPart}.png`;
+}

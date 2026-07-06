@@ -36,6 +36,8 @@ export interface StandardArticleCardProps {
   excerptLineClamp?: number;
   showImage: boolean;
   brandLogoUrl: string;
+  pageNumber?: number;
+  pageTotal?: number;
   className?: string;
   id?: string;
   headlineZoneRef?: RefObject<HTMLDivElement | null>;
@@ -230,7 +232,18 @@ function ExcerptBlock({
   );
 }
 
-function FooterBlock({ brandLogoUrl }: { brandLogoUrl: string }) {
+function FooterBlock({
+  brandLogoUrl,
+  pageNumber,
+  pageTotal,
+}: {
+  brandLogoUrl: string;
+  pageNumber?: number;
+  pageTotal?: number;
+}) {
+  const showPageNumber =
+    pageTotal !== undefined && pageTotal > 1 && pageNumber !== undefined;
+
   return (
     <footer className={styles.footer}>
       <img
@@ -239,6 +252,11 @@ function FooterBlock({ brandLogoUrl }: { brandLogoUrl: string }) {
         alt=""
         draggable={false}
       />
+      {showPageNumber ? (
+        <span className={styles.pageNumber}>
+          {pageNumber} / {pageTotal}
+        </span>
+      ) : null}
     </footer>
   );
 }
@@ -304,6 +322,8 @@ export function StandardArticleCard({
   excerptLineClamp = 0,
   showImage,
   brandLogoUrl,
+  pageNumber,
+  pageTotal,
   className,
   id,
   headlineZoneRef,
@@ -360,7 +380,13 @@ export function StandardArticleCard({
     <MetadataLineBlock metadataLine={metadataLine} />
   ) : null;
 
-  const footerBlock = <FooterBlock brandLogoUrl={brandLogoUrl} />;
+  const footerBlock = (
+    <FooterBlock
+      brandLogoUrl={brandLogoUrl}
+      pageNumber={pageNumber}
+      pageTotal={pageTotal}
+    />
+  );
 
   const imageBlock =
     showImage && imageUrl ? (

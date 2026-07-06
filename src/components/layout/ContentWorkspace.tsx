@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useRef } from 'react';
+import { PagesBar } from '@/components/layout/PagesBar';
 import { ArticleImagePreview } from '@/components/layout/ArticleImagePreview';
 import { ArticleImageUpload } from '@/components/layout/ArticleImageUpload';
 import { ArticleMetadataFields } from '@/components/layout/ArticleMetadataFields';
@@ -20,8 +21,10 @@ import { resolveSourceLogoUrl } from '@/store/selectors';
 import {
   selectHasScratchpadSelection,
   useSnipitStore,
+  selectActivePage,
 } from '@/store/snipitStore';
 import { isValidHttpUrl, normalizeHttpUrl } from '@/utils/urlValidation';
+import { MAX_ARTICLE_PAGES } from '@/types/articlePage';
 import styles from './ContentWorkspace.module.css';
 
 export function ContentWorkspace() {
@@ -33,7 +36,8 @@ export function ContentWorkspace() {
   const subhead = useSnipitStore((s) => s.subhead);
   const scratchpad = useSnipitStore((s) => s.scratchpad);
   const caption = useSnipitStore((s) => s.caption);
-  const imageMode = useSnipitStore((s) => s.imageMode);
+  const activePage = useSnipitStore(selectActivePage);
+  const imageMode = activePage.imageMode;
   const headlineFitStatus = useSnipitStore((s) => s.headlineFitStatus);
   const logoUrl = useSnipitStore(resolveSourceLogoUrl);
   const hasSelection = useSnipitStore(selectHasScratchpadSelection);
@@ -46,6 +50,8 @@ export function ContentWorkspace() {
   const setCaption = useSnipitStore((s) => s.setCaption);
   const useSelectedAsExcerpt = useSnipitStore((s) => s.useSelectedAsExcerpt);
   const appendSelectedToExcerpt = useSnipitStore((s) => s.appendSelectedToExcerpt);
+  const addSelectionAsNewPage = useSnipitStore((s) => s.addSelectionAsNewPage);
+  const pages = useSnipitStore((s) => s.pages);
   const clearScratchpad = useSnipitStore((s) => s.clearScratchpad);
 
   const format = FORMATS[formatKey];
@@ -124,6 +130,8 @@ export function ContentWorkspace() {
 
   return (
     <main className={styles.panel}>
+      <PagesBar />
+
       <section className={styles.group}>
         <div className={styles.fieldCompact}>
           <TextFitFieldHeader field="headline" label="Headline" htmlFor="headline" />
@@ -192,7 +200,7 @@ export function ContentWorkspace() {
         <div className={styles.field}>
           <TextFitFieldHeader
             field="excerpt"
-            label="Article Snippet"
+            label="Page Snippet"
             htmlFor="excerpt"
           />
           <SnippetEditor id="excerpt" rows={8} minHeight={168} />
@@ -238,6 +246,14 @@ export function ContentWorkspace() {
             disabled={!hasSelection}
           >
             Append selected to snippet
+          </button>
+          <button
+            type="button"
+            className={styles.secondaryButton}
+            onClick={addSelectionAsNewPage}
+            disabled={!hasSelection || pages.length >= MAX_ARTICLE_PAGES}
+          >
+            Add selection as new page
           </button>
           <button
             type="button"

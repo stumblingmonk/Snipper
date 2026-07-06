@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type { FormatSpec } from '@/constants/formats';
+import { useSnipitStore } from '@/store/snipitStore';
 import styles from './PreviewPanel.module.css';
 
 type PreviewZoomMode = 'fit' | 0.5 | 0.75 | 1;
@@ -23,6 +24,10 @@ export function PreviewPanel({ children, format }: PreviewPanelProps) {
   const viewportRef = useRef<HTMLDivElement>(null);
   const [fitScale, setFitScale] = useState(0.35);
   const [zoomMode, setZoomMode] = useState<PreviewZoomMode>('fit');
+  const pages = useSnipitStore((s) => s.pages);
+  const activePageIndex = useSnipitStore((s) => s.activePageIndex);
+  const goToPrevPage = useSnipitStore((s) => s.goToPrevPage);
+  const goToNextPage = useSnipitStore((s) => s.goToNextPage);
 
   useEffect(() => {
     const el = viewportRef.current;
@@ -79,6 +84,30 @@ export function PreviewPanel({ children, format }: PreviewPanelProps) {
         <span className={styles.meta}>
           {format.label} — {format.width} × {format.height} — {scaleLabel}
         </span>
+      </div>
+
+      <div className={styles.pagePager}>
+        <button
+          type="button"
+          className={styles.pageNavButton}
+          onClick={goToPrevPage}
+          disabled={activePageIndex <= 0}
+          aria-label="Previous preview page"
+        >
+          ‹
+        </button>
+        <span className={styles.pagePagerLabel}>
+          Page {activePageIndex + 1} of {pages.length}
+        </span>
+        <button
+          type="button"
+          className={styles.pageNavButton}
+          onClick={goToNextPage}
+          disabled={activePageIndex >= pages.length - 1}
+          aria-label="Next preview page"
+        >
+          ›
+        </button>
       </div>
 
       <div ref={viewportRef} className={styles.viewport}>

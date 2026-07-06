@@ -3,7 +3,7 @@ import type { StandardArticleCardProps } from '@/components/cards/StandardArticl
 import { StandardArticleCard } from '@/components/cards/StandardArticleCard';
 import type { PreviewZoneMetrics } from '@/context/PreviewZoneMetricsContext';
 import { useTextFitMeasurement } from '@/hooks/useTextFitMeasurement';
-import { useSnipitStore } from '@/store/snipitStore';
+import { useSnipitStore, selectActivePage } from '@/store/snipitStore';
 
 type PreviewCardWithTextFitProps = Omit<
   StandardArticleCardProps,
@@ -22,19 +22,18 @@ export function PreviewCardWithTextFit({
   const formatKey = useSnipitStore((s) => s.format);
   const headline = useSnipitStore((s) => s.headline);
   const subhead = useSnipitStore((s) => s.subhead);
-  const excerpt = useSnipitStore((s) => s.excerpt);
   const headlineSizeStep = useSnipitStore((s) => s.headlineSizeStep);
-  const excerptSizeStep = useSnipitStore((s) => s.excerptSizeStep);
   const headlineAutoFit = useSnipitStore((s) => s.headlineAutoFit);
-  const excerptAutoFit = useSnipitStore((s) => s.excerptAutoFit);
-  const imageMode = useSnipitStore((s) => s.imageMode);
   const headlineResolvedFontSize = useSnipitStore(
     (s) => s.headlineResolvedFontSize,
   );
-  const excerptResolvedFontSize = useSnipitStore(
-    (s) => s.excerptResolvedFontSize,
-  );
-  const excerptLineClamp = useSnipitStore((s) => s.excerptLineClamp);
+  const activePage = useSnipitStore(selectActivePage);
+  const excerpt = activePage.excerpt;
+  const excerptSizeStep = activePage.excerptSizeStep;
+  const excerptAutoFit = activePage.excerptAutoFit;
+  const imageMode = activePage.imageMode;
+  const excerptResolvedFontSize = activePage.excerptResolvedFontSize;
+  const excerptLineClamp = activePage.excerptLineClamp;
 
   useTextFitMeasurement({
     headlineZoneRef,

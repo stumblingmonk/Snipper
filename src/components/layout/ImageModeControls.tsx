@@ -9,7 +9,7 @@ import {
   cropHasPanRoom,
 } from '@/constants/imageSettings';
 import type { ReactNode } from 'react';
-import { useSnipitStore } from '@/store/snipitStore';
+import { useSnipitStore, selectActivePage } from '@/store/snipitStore';
 import styles from './ImageModeControls.module.css';
 
 const IMAGE_MODES: { id: ImageMode; label: string }[] = [
@@ -67,11 +67,12 @@ export function ImageModeControls({
   part = 'all',
   children,
 }: ImageModeControlsProps) {
-  const imageMode = useSnipitStore((s) => s.imageMode);
-  const articleImageBw = useSnipitStore((s) => s.articleImageBw);
-  const cropZoom = useSnipitStore((s) => s.cropZoom);
-  const cropOffsetX = useSnipitStore((s) => s.cropOffsetX);
-  const cropOffsetY = useSnipitStore((s) => s.cropOffsetY);
+  const activePage = useSnipitStore(selectActivePage);
+  const imageMode = activePage.imageMode;
+  const articleImageBw = activePage.articleImageBw;
+  const cropZoom = activePage.cropZoom;
+  const cropOffsetX = activePage.cropOffsetX;
+  const cropOffsetY = activePage.cropOffsetY;
 
   const setImageMode = useSnipitStore((s) => s.setImageMode);
   const setArticleImageBw = useSnipitStore((s) => s.setArticleImageBw);

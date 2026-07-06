@@ -264,12 +264,24 @@
 }
 
 .footer {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: var(--sa-footer-padding-top, 10px) var(--sa-zone-margin-x, 48px)
     var(--sa-footer-padding-bottom, 14px);
   flex-shrink: 0;
+}
+
+.pageNumber {
+  position: absolute;
+  right: var(--sa-zone-margin-x, 48px);
+  font-family: var(--font-body);
+  font-size: 22px;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: #4a5568;
 }
 
 .footerObbLogo {

@@ -5,24 +5,29 @@ import { BrandSourcePicker } from '@/components/layout/BrandSourcePicker';
 import { SourceLogoPicker } from '@/components/layout/SourceLogoPicker';
 import { SNIPIT_APP_LOGO_URL } from '@/constants/brandAssets';
 import { useSnipitStore } from '@/store/snipitStore';
+import type { ExportProgress } from '@/store/snipitStore';
 import styles from './ControlsPanel.module.css';
 
 interface ControlsPanelProps {
   onExport: () => void;
   exportStatus: 'idle' | 'exporting' | 'done' | 'error';
   exportError: string | null;
+  exportProgress: ExportProgress | null;
   lastExportSize: { width: number; height: number } | null;
   backgroundFallbackNote: string | null;
   exportDisabled?: boolean;
+  pageCount: number;
 }
 
 export function ControlsPanel({
   onExport,
   exportStatus,
   exportError,
+  exportProgress,
   lastExportSize,
   backgroundFallbackNote,
   exportDisabled = false,
+  pageCount,
 }: ControlsPanelProps) {
   const isExporting = exportStatus === 'exporting';
   const [searchQuery, setSearchQuery] = useState('');
@@ -39,7 +44,7 @@ export function ControlsPanel({
           draggable={false}
         />
         <p className={styles.byline}>BY MARK BRINN FOR OBB</p>
-        <span className={styles.phaseBadge}>Phase 7C — Background Packs + OBB Mark</span>
+        <span className={styles.phaseBadge}>Phase 8 — Multi-page Carousel</span>
       </header>
 
       <div className={styles.panelBody}>
@@ -96,12 +101,19 @@ export function ControlsPanel({
           onClick={onExport}
           disabled={isExporting || exportDisabled}
         >
-          {isExporting ? 'Exporting…' : 'Export PNG'}
+          {isExporting ? 'Exporting…' : 'Export All PNGs'}
         </button>
+
+        {exportStatus === 'exporting' && exportProgress ? (
+          <p className={styles.progress} role="status">
+            {exportProgress.completed} / {exportProgress.total} — {exportProgress.detail}
+          </p>
+        ) : null}
 
         {exportStatus === 'done' && lastExportSize ? (
           <p className={styles.success}>
-            Exported {lastExportSize.width} × {lastExportSize.height} PNG
+            Exported {pageCount} page{pageCount === 1 ? '' : 's'} × all formats (
+            {lastExportSize.width} × {lastExportSize.height} last PNG)
           </p>
         ) : null}
 

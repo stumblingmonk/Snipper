@@ -3,6 +3,7 @@ import { ARTICLE_IMAGE_MAX_BYTES } from '@/constants/imageSettings';
 import {
   selectHasUploadedArticleImage,
   useSnipitStore,
+  selectActivePage,
 } from '@/store/snipitStore';
 import styles from './ArticleImageUpload.module.css';
 
@@ -15,8 +16,9 @@ interface ArticleImageUploadProps {
 export function ArticleImageUpload({ compact = false }: ArticleImageUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const imageMode = useSnipitStore((s) => s.imageMode);
-  const articleImageUploadError = useSnipitStore((s) => s.articleImageUploadError);
+  const activePage = useSnipitStore(selectActivePage);
+  const imageMode = activePage.imageMode;
+  const articleImageUploadError = activePage.articleImageUploadError;
   const hasUploadedImage = useSnipitStore(selectHasUploadedArticleImage);
 
   const uploadArticleImage = useSnipitStore((s) => s.uploadArticleImage);

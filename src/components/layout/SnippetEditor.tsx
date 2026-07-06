@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import { usePreviewZoneMetrics } from '@/context/PreviewZoneMetricsContext';
-import { useSnipitStore } from '@/store/snipitStore';
+import { useSnipitStore, selectActivePage } from '@/store/snipitStore';
 import {
   computeExcerptOverflowSplitIndex,
   excerptCapacityHeightFromLineClamp,
@@ -25,12 +25,11 @@ export function SnippetEditor({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const highlightRef = useRef<HTMLDivElement>(null);
 
-  const excerpt = useSnipitStore((s) => s.excerpt);
-  const excerptFitStatus = useSnipitStore((s) => s.excerptFitStatus);
-  const excerptResolvedFontSize = useSnipitStore(
-    (s) => s.excerptResolvedFontSize,
-  );
-  const excerptLineClamp = useSnipitStore((s) => s.excerptLineClamp);
+  const activePage = useSnipitStore(selectActivePage);
+  const excerpt = activePage.excerpt;
+  const excerptFitStatus = activePage.excerptFitStatus;
+  const excerptResolvedFontSize = activePage.excerptResolvedFontSize;
+  const excerptLineClamp = activePage.excerptLineClamp;
   const setExcerpt = useSnipitStore((s) => s.setExcerpt);
   const { excerptWidth, excerptHeight } = usePreviewZoneMetrics();
 
@@ -124,7 +123,7 @@ export function SnippetEditor({
       <textarea
         ref={textareaRef}
         id={id}
-        aria-label="Article Snippet"
+        aria-label="Page Snippet"
         className={textareaClass}
         style={{ minHeight: `${minHeight}px` }}
         value={excerpt}

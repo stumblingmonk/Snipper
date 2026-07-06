@@ -1,11 +1,12 @@
 import { resolveArticleImageThumbnailUrl } from '@/store/selectors';
-import { useSnipitStore } from '@/store/snipitStore';
+import { useSnipitStore, selectActivePage } from '@/store/snipitStore';
 import styles from './ArticleImagePreview.module.css';
 
 export function ArticleImagePreview() {
   const thumbnailUrl = useSnipitStore(resolveArticleImageThumbnailUrl);
-  const articleImageBw = useSnipitStore((s) => s.articleImageBw);
-  const imageMode = useSnipitStore((s) => s.imageMode);
+  const activePage = useSnipitStore(selectActivePage);
+  const articleImageBw = activePage.articleImageBw;
+  const imageMode = activePage.imageMode;
 
   if (!thumbnailUrl) {
     return (
