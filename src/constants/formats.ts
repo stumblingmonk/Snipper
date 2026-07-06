@@ -41,5 +41,5 @@ export const FORMAT_LIST: FormatSpec[] = [
 export const STORY_FORMAT = FORMATS.story;
 
 export function getFormatExportFilename(formatKey: FormatKey): string {
-  return `snipper-${formatKey}-export.png`;
+  return `snipit-${formatKey}-export.png`;
 }

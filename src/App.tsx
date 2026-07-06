@@ -4,8 +4,8 @@ import { FLATTEN_DEBOUNCE_MS } from '@/constants/imageSettings';
 import { computeArticleZones, getStandardArticleLayout } from '@/constants/standardArticleLayouts';
 import { exportCardPng } from '@/utils/exportCard';
 import { flattenImage } from '@/utils/flattenImage';
-import { resolveFormatBackground, resolveSourceLogoUrl, resolveSourceNameForCard } from '@/store/selectors';
-import { useSnipperStore } from '@/store/snipperStore';
+import { resolveFormatBackground, resolveSourceLogoUrl, resolveSourceNameForCard, resolveBrandLogoUrl, resolveMetadataLine, resolveAttribution } from '@/store/selectors';
+import { useSnipitStore } from '@/store/snipitStore';
 import { PreviewCardWithTextFit } from '@/components/cards/PreviewCardWithTextFit';
 import { StandardArticleCard } from '@/components/cards/StandardArticleCard';
 import { ControlsPanel } from '@/components/layout/ControlsPanel';
@@ -25,47 +25,51 @@ export default function App() {
   const flattenTimeoutRef = useRef<number | null>(null);
   const [flattenPending, setFlattenPending] = useState(false);
 
-  const storeFormatKey = useSnipperStore((s) => s.format);
+  const storeFormatKey = useSnipitStore((s) => s.format);
   const format = isFormatKey(storeFormatKey) ? FORMATS[storeFormatKey] : FORMATS.story;
   const layout = useMemo(
     () => getStandardArticleLayout(format.key),
     [format.key],
   );
-  const backgroundUrl = useSnipperStore((s) => resolveFormatBackground(s).url);
-  const backgroundFallbackColor = useSnipperStore(
+  const backgroundUrl = useSnipitStore((s) => resolveFormatBackground(s).url);
+  const backgroundFallbackColor = useSnipitStore(
     (s) => resolveFormatBackground(s).fallbackColor,
   );
-  const backgroundFallbackNote = useSnipperStore(
+  const backgroundFallbackNote = useSnipitStore(
     (s) => resolveFormatBackground(s).fallbackNote,
   );
 
-  const logoUrl = useSnipperStore(resolveSourceLogoUrl);
-  const articleImageObjectUrl = useSnipperStore((s) => s.articleImageObjectUrl);
-  const flattenedCropUrl = useSnipperStore((s) => s.flattenedCropUrl);
-  const imageMode = useSnipperStore((s) => s.imageMode);
-  const cropZoom = useSnipperStore((s) => s.cropZoom);
-  const cropOffsetX = useSnipperStore((s) => s.cropOffsetX);
-  const cropOffsetY = useSnipperStore((s) => s.cropOffsetY);
-  const exportStatus = useSnipperStore((s) => s.exportStatus);
-  const exportError = useSnipperStore((s) => s.exportError);
-  const lastExportSize = useSnipperStore((s) => s.lastExportSize);
-  const sourceName = useSnipperStore(resolveSourceNameForCard);
-  const headline = useSnipperStore((s) => s.headline);
-  const subhead = useSnipperStore((s) => s.subhead);
-  const excerpt = useSnipperStore((s) => s.excerpt);
-  const headlineResolvedFontSize = useSnipperStore(
+  const logoUrl = useSnipitStore(resolveSourceLogoUrl);
+  const brandLogoUrl = useSnipitStore(resolveBrandLogoUrl);
+  const metadataLine = useSnipitStore(resolveMetadataLine);
+  const attribution = useSnipitStore(resolveAttribution);
+  const articleImageObjectUrl = useSnipitStore((s) => s.articleImageObjectUrl);
+  const flattenedCropUrl = useSnipitStore((s) => s.flattenedCropUrl);
+  const imageMode = useSnipitStore((s) => s.imageMode);
+  const articleImageBw = useSnipitStore((s) => s.articleImageBw);
+  const cropZoom = useSnipitStore((s) => s.cropZoom);
+  const cropOffsetX = useSnipitStore((s) => s.cropOffsetX);
+  const cropOffsetY = useSnipitStore((s) => s.cropOffsetY);
+  const exportStatus = useSnipitStore((s) => s.exportStatus);
+  const exportError = useSnipitStore((s) => s.exportError);
+  const lastExportSize = useSnipitStore((s) => s.lastExportSize);
+  const sourceName = useSnipitStore(resolveSourceNameForCard);
+  const headline = useSnipitStore((s) => s.headline);
+  const subhead = useSnipitStore((s) => s.subhead);
+  const excerpt = useSnipitStore((s) => s.excerpt);
+  const headlineResolvedFontSize = useSnipitStore(
     (s) => s.headlineResolvedFontSize,
   );
-  const excerptResolvedFontSize = useSnipperStore(
+  const excerptResolvedFontSize = useSnipitStore(
     (s) => s.excerptResolvedFontSize,
   );
-  const excerptLineClamp = useSnipperStore((s) => s.excerptLineClamp);
+  const excerptLineClamp = useSnipitStore((s) => s.excerptLineClamp);
   const [previewZoneMetrics, setPreviewZoneMetrics] = useState<PreviewZoneMetrics>({
     excerptWidth: 0,
     excerptHeight: 0,
   });
-  const setFlattenedCropUrl = useSnipperStore((s) => s.setFlattenedCropUrl);
-  const setExportStatus = useSnipperStore((s) => s.setExportStatus);
+  const setFlattenedCropUrl = useSnipitStore((s) => s.setFlattenedCropUrl);
+  const setExportStatus = useSnipitStore((s) => s.setExportStatus);
 
   const showImage = imageMode !== 'none';
   const computedImageFrame = useMemo(
@@ -90,7 +94,7 @@ export default function App() {
 
   const runFlatten = useCallback(
     async (generation: number): Promise<boolean> => {
-      const state = useSnipperStore.getState();
+      const state = useSnipitStore.getState();
       const sourceUrl = state.articleImageObjectUrl;
       const mode = state.imageMode;
 
@@ -186,7 +190,7 @@ export default function App() {
 
     if (imageMode !== 'none' && articleImageObjectUrl) {
       const flushed = await flushFlatten();
-      const latestFlattened = useSnipperStore.getState().flattenedCropUrl;
+      const latestFlattened = useSnipitStore.getState().flattenedCropUrl;
       if (!flushed || !latestFlattened) {
         setExportStatus('error', 'Article image is still processing. Try again.');
         return;
@@ -223,10 +227,14 @@ export default function App() {
     headline,
     subhead,
     excerpt,
+    metadataLine,
+    attribution,
     logoUrl,
+    brandLogoUrl,
     backgroundUrl,
     backgroundFallbackColor,
     imageUrl: cardImageUrl,
+    articleImageBw,
     showImage: showImage && Boolean(cardImageUrl),
   };
 

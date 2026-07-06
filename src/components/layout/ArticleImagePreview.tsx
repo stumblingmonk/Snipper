@@ -1,9 +1,11 @@
 import { resolveArticleImageThumbnailUrl } from '@/store/selectors';
-import { useSnipperStore } from '@/store/snipperStore';
+import { useSnipitStore } from '@/store/snipitStore';
 import styles from './ArticleImagePreview.module.css';
 
 export function ArticleImagePreview() {
-  const thumbnailUrl = useSnipperStore(resolveArticleImageThumbnailUrl);
+  const thumbnailUrl = useSnipitStore(resolveArticleImageThumbnailUrl);
+  const articleImageBw = useSnipitStore((s) => s.articleImageBw);
+  const imageMode = useSnipitStore((s) => s.imageMode);
 
   if (!thumbnailUrl) {
     return (
@@ -15,7 +17,14 @@ export function ArticleImagePreview() {
 
   return (
     <div className={styles.previewWrap}>
-      <div className={styles.previewFrame}>
+      <div
+        className={[
+          styles.previewFrame,
+          articleImageBw && imageMode !== 'none' ? styles.previewFrameBw : '',
+        ]
+          .filter(Boolean)
+          .join(' ')}
+      >
         <img
           className={styles.previewImage}
           src={thumbnailUrl}

@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useRef } from 'react';
 import { ArticleImagePreview } from '@/components/layout/ArticleImagePreview';
 import { ArticleImageUpload } from '@/components/layout/ArticleImageUpload';
+import { ArticleMetadataFields } from '@/components/layout/ArticleMetadataFields';
 import { ImageModeControls } from '@/components/layout/ImageModeControls';
 import { OverflowHighlightField } from '@/components/layout/OverflowHighlightField';
 import { SnippetEditor } from '@/components/layout/SnippetEditor';
@@ -18,34 +19,34 @@ import { useTextOverflowSplitIndex } from '@/hooks/useTextOverflowSplitIndex';
 import { resolveSourceLogoUrl } from '@/store/selectors';
 import {
   selectHasScratchpadSelection,
-  useSnipperStore,
-} from '@/store/snipperStore';
+  useSnipitStore,
+} from '@/store/snipitStore';
 import { isValidHttpUrl, normalizeHttpUrl } from '@/utils/urlValidation';
 import styles from './ContentWorkspace.module.css';
 
 export function ContentWorkspace() {
   const scratchpadRef = useRef<HTMLTextAreaElement>(null);
 
-  const formatKey = useSnipperStore((s) => s.format);
-  const sourceUrl = useSnipperStore((s) => s.sourceUrl);
-  const headline = useSnipperStore((s) => s.headline);
-  const subhead = useSnipperStore((s) => s.subhead);
-  const scratchpad = useSnipperStore((s) => s.scratchpad);
-  const caption = useSnipperStore((s) => s.caption);
-  const imageMode = useSnipperStore((s) => s.imageMode);
-  const headlineFitStatus = useSnipperStore((s) => s.headlineFitStatus);
-  const logoUrl = useSnipperStore(resolveSourceLogoUrl);
-  const hasSelection = useSnipperStore(selectHasScratchpadSelection);
+  const formatKey = useSnipitStore((s) => s.format);
+  const sourceUrl = useSnipitStore((s) => s.sourceUrl);
+  const headline = useSnipitStore((s) => s.headline);
+  const subhead = useSnipitStore((s) => s.subhead);
+  const scratchpad = useSnipitStore((s) => s.scratchpad);
+  const caption = useSnipitStore((s) => s.caption);
+  const imageMode = useSnipitStore((s) => s.imageMode);
+  const headlineFitStatus = useSnipitStore((s) => s.headlineFitStatus);
+  const logoUrl = useSnipitStore(resolveSourceLogoUrl);
+  const hasSelection = useSnipitStore(selectHasScratchpadSelection);
 
-  const setSourceUrl = useSnipperStore((s) => s.setSourceUrl);
-  const setHeadline = useSnipperStore((s) => s.setHeadline);
-  const setSubhead = useSnipperStore((s) => s.setSubhead);
-  const setScratchpad = useSnipperStore((s) => s.setScratchpad);
-  const setScratchpadSelection = useSnipperStore((s) => s.setScratchpadSelection);
-  const setCaption = useSnipperStore((s) => s.setCaption);
-  const useSelectedAsExcerpt = useSnipperStore((s) => s.useSelectedAsExcerpt);
-  const appendSelectedToExcerpt = useSnipperStore((s) => s.appendSelectedToExcerpt);
-  const clearScratchpad = useSnipperStore((s) => s.clearScratchpad);
+  const setSourceUrl = useSnipitStore((s) => s.setSourceUrl);
+  const setHeadline = useSnipitStore((s) => s.setHeadline);
+  const setSubhead = useSnipitStore((s) => s.setSubhead);
+  const setScratchpad = useSnipitStore((s) => s.setScratchpad);
+  const setScratchpadSelection = useSnipitStore((s) => s.setScratchpadSelection);
+  const setCaption = useSnipitStore((s) => s.setCaption);
+  const useSelectedAsExcerpt = useSnipitStore((s) => s.useSelectedAsExcerpt);
+  const appendSelectedToExcerpt = useSnipitStore((s) => s.appendSelectedToExcerpt);
+  const clearScratchpad = useSnipitStore((s) => s.clearScratchpad);
 
   const format = FORMATS[formatKey];
   const layout = useMemo(
@@ -158,6 +159,10 @@ export function ContentWorkspace() {
             splitIndex={subheadSplitIndex}
           />
         </div>
+      </section>
+
+      <section className={styles.groupCompact}>
+        <ArticleMetadataFields />
       </section>
 
       <section className={styles.groupCompactArticleImage}>

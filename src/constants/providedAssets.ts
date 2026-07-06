@@ -1,4 +1,4 @@
-/** Paths to provided SNIPPER handoff assets served from /public. */
+/** Paths to provided handoff assets served from /public. */
 export const PROVIDED_BACKGROUNDS = {
   story: '/backgrounds/paper/story_1080x1920.jpg',
   square: '/backgrounds/paper/square_1080x1080.jpg',
@@ -30,4 +30,7 @@ export const PROVIDED_DEFAULT_COPY = {
     'Saturday Night Live star Marcello Hernández has been tapped to host the 2026 ESPYs for ESPN, in a high-profile hosting gig for the rising comedy talent. The ESPYs are returning to New York after more than 25 years in Las Vegas and Los Angeles, with this year’s installment set to be held at the David Koch Theater at Lincoln Center on July 15. The awards show will air on ABC and stream on the ESPN app. Hernández has quickly become one of the breakout performers on SNL, and the hosting assignment gives ESPN a recognizable face for the telecast.',
   caption:
     'Marcello Hernández will host the 2026 ESPYs as the awards return to New York City. Ceremony airs July 15 on ABC.',
+  byline: 'By Natalie Jarvey',
+  articleDate: 'Mar 15, 2026',
+  attribution: 'Photo: Getty Images',
 } as const;

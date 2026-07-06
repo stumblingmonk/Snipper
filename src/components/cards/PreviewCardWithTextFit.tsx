@@ -3,7 +3,7 @@ import type { StandardArticleCardProps } from '@/components/cards/StandardArticl
 import { StandardArticleCard } from '@/components/cards/StandardArticleCard';
 import type { PreviewZoneMetrics } from '@/context/PreviewZoneMetricsContext';
 import { useTextFitMeasurement } from '@/hooks/useTextFitMeasurement';
-import { useSnipperStore } from '@/store/snipperStore';
+import { useSnipitStore } from '@/store/snipitStore';
 
 type PreviewCardWithTextFitProps = Omit<
   StandardArticleCardProps,
@@ -19,22 +19,22 @@ export function PreviewCardWithTextFit({
   const headlineZoneRef = useRef<HTMLDivElement>(null);
   const excerptZoneRef = useRef<HTMLDivElement>(null);
 
-  const formatKey = useSnipperStore((s) => s.format);
-  const headline = useSnipperStore((s) => s.headline);
-  const subhead = useSnipperStore((s) => s.subhead);
-  const excerpt = useSnipperStore((s) => s.excerpt);
-  const headlineSizeStep = useSnipperStore((s) => s.headlineSizeStep);
-  const excerptSizeStep = useSnipperStore((s) => s.excerptSizeStep);
-  const headlineAutoFit = useSnipperStore((s) => s.headlineAutoFit);
-  const excerptAutoFit = useSnipperStore((s) => s.excerptAutoFit);
-  const imageMode = useSnipperStore((s) => s.imageMode);
-  const headlineResolvedFontSize = useSnipperStore(
+  const formatKey = useSnipitStore((s) => s.format);
+  const headline = useSnipitStore((s) => s.headline);
+  const subhead = useSnipitStore((s) => s.subhead);
+  const excerpt = useSnipitStore((s) => s.excerpt);
+  const headlineSizeStep = useSnipitStore((s) => s.headlineSizeStep);
+  const excerptSizeStep = useSnipitStore((s) => s.excerptSizeStep);
+  const headlineAutoFit = useSnipitStore((s) => s.headlineAutoFit);
+  const excerptAutoFit = useSnipitStore((s) => s.excerptAutoFit);
+  const imageMode = useSnipitStore((s) => s.imageMode);
+  const headlineResolvedFontSize = useSnipitStore(
     (s) => s.headlineResolvedFontSize,
   );
-  const excerptResolvedFontSize = useSnipperStore(
+  const excerptResolvedFontSize = useSnipitStore(
     (s) => s.excerptResolvedFontSize,
   );
-  const excerptLineClamp = useSnipperStore((s) => s.excerptLineClamp);
+  const excerptLineClamp = useSnipitStore((s) => s.excerptLineClamp);
 
   useTextFitMeasurement({
     headlineZoneRef,

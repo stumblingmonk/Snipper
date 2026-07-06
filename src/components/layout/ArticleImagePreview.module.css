@@ -6,6 +6,8 @@
 }
 
 .previewFrame {
+  position: relative;
+  isolation: isolate;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -20,6 +22,35 @@
   width: 100%;
   height: 100%;
   object-fit: contain;
+  border-radius: 4px;
+}
+
+.previewFrameBw .previewImage {
+  filter: grayscale(100%) brightness(0.97) contrast(1.1);
+}
+
+.previewFrameBw::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-color: #f8f0e6;
+  mix-blend-mode: multiply;
+  opacity: 0.28;
+  z-index: 1;
+  border-radius: 4px;
+}
+
+.previewFrameBw::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: url('/textures/grain.png');
+  background-size: 120px 120px;
+  background-repeat: repeat;
+  opacity: 1;
+  z-index: 2;
   border-radius: 4px;
 }
 

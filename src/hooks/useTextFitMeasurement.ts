@@ -11,7 +11,7 @@ import {
   measureTextFitOffscreen,
 } from '@/utils/textFitMeasure';
 import { resolveSourceLogoUrl, resolveSourceNameForCard } from '@/store/selectors';
-import { useSnipperStore } from '@/store/snipperStore';
+import { useSnipitStore } from '@/store/snipitStore';
 
 interface UseTextFitMeasurementOptions {
   headlineZoneRef: React.RefObject<HTMLDivElement | null>;
@@ -42,9 +42,9 @@ export function useTextFitMeasurement({
   imageMode,
   onPreviewZoneMetrics,
 }: UseTextFitMeasurementOptions): boolean {
-  const setTextFitResult = useSnipperStore((s) => s.setTextFitResult);
-  const logoUrl = useSnipperStore(resolveSourceLogoUrl);
-  const sourceName = useSnipperStore(resolveSourceNameForCard);
+  const setTextFitResult = useSnipitStore((s) => s.setTextFitResult);
+  const logoUrl = useSnipitStore(resolveSourceLogoUrl);
+  const sourceName = useSnipitStore(resolveSourceNameForCard);
   const hasLogo = Boolean(logoUrl);
   const [fontsReady, setFontsReady] = useState(
     () => typeof document !== 'undefined' && document.fonts.status === 'loaded',

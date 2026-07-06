@@ -1,4 +1,4 @@
-# SNIPPER
+# SNIPit
 
 Desktop-only internal tool for creating branded social graphics from manually copied article content.
 

@@ -7,14 +7,18 @@ import {
   getBackgroundPack,
 } from '@/constants/backgroundPacks';
 import { getBuiltinSourceLogoUrl } from '@/constants/builtinSourceLogos';
+import {
+  getBuiltinBrandLogoUrl,
+} from '@/constants/builtinBrandLogos';
+import { OBB_BRAND_LOGO_URL } from '@/constants/brandAssets';
 import { FORMATS, type FormatKey } from '@/constants/formats';
-import type { SnipperState } from '@/store/snipperStore';
+import type { SnipitState } from '@/store/snipitStore';
 
 function resolveFormatKey(format: string): FormatKey {
   return format in FORMATS ? (format as FormatKey) : 'story';
 }
 
-export function resolveSourceNameForCard(state: SnipperState): string {
+export function resolveSourceNameForCard(state: SnipitState): string {
   if (!state.showSource) {
     return '';
   }
@@ -22,7 +26,7 @@ export function resolveSourceNameForCard(state: SnipperState): string {
   return state.sourceName;
 }
 
-export function resolveSourceLogoUrl(state: SnipperState): string | null {
+export function resolveSourceLogoUrl(state: SnipitState): string | null {
   if (!state.showSource || state.sourceLogoHidden) {
     return null;
   }
@@ -38,6 +42,34 @@ export function resolveSourceLogoUrl(state: SnipperState): string | null {
   return null;
 }
 
+export function resolveBrandLogoUrl(state: SnipitState): string {
+  return (
+    getBuiltinBrandLogoUrl(state.selectedBrandLogoId) ?? OBB_BRAND_LOGO_URL
+  );
+}
+
+export function resolveMetadataLine(state: SnipitState): string | null {
+  const parts: string[] = [];
+
+  if (state.showByline && state.byline.trim()) {
+    parts.push(state.byline.trim());
+  }
+
+  if (state.showArticleDate && state.articleDate.trim()) {
+    parts.push(state.articleDate.trim());
+  }
+
+  return parts.length > 0 ? parts.join(' · ') : null;
+}
+
+export function resolveAttribution(state: SnipitState): string | null {
+  if (!state.showAttribution || !state.attribution.trim()) {
+    return null;
+  }
+
+  return state.attribution.trim();
+}
+
 export interface ResolvedFormatBackground {
   url: string;
   fallbackColor: string;
@@ -51,7 +83,7 @@ function legacyBackgroundUrl(formatKey: FormatKey): string {
 }
 
 export function resolveFormatBackground(
-  state: SnipperState,
+  state: SnipitState,
 ): ResolvedFormatBackground {
   const formatKey = resolveFormatKey(state.format);
   const layout = getStandardArticleLayout(formatKey);
@@ -88,6 +120,6 @@ export function resolveFormatBackground(
 }
 
 /** Passive article-image thumbnail — original/source only, never flattened output. */
-export function resolveArticleImageThumbnailUrl(state: SnipperState): string | null {
+export function resolveArticleImageThumbnailUrl(state: SnipitState): string | null {
   return state.uploadedArticleImageObjectUrl ?? state.articleImageObjectUrl;
 }

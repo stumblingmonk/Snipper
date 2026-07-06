@@ -9,7 +9,7 @@ import {
   cropHasPanRoom,
 } from '@/constants/imageSettings';
 import type { ReactNode } from 'react';
-import { useSnipperStore } from '@/store/snipperStore';
+import { useSnipitStore } from '@/store/snipitStore';
 import styles from './ImageModeControls.module.css';
 
 const IMAGE_MODES: { id: ImageMode; label: string }[] = [
@@ -67,16 +67,18 @@ export function ImageModeControls({
   part = 'all',
   children,
 }: ImageModeControlsProps) {
-  const imageMode = useSnipperStore((s) => s.imageMode);
-  const cropZoom = useSnipperStore((s) => s.cropZoom);
-  const cropOffsetX = useSnipperStore((s) => s.cropOffsetX);
-  const cropOffsetY = useSnipperStore((s) => s.cropOffsetY);
+  const imageMode = useSnipitStore((s) => s.imageMode);
+  const articleImageBw = useSnipitStore((s) => s.articleImageBw);
+  const cropZoom = useSnipitStore((s) => s.cropZoom);
+  const cropOffsetX = useSnipitStore((s) => s.cropOffsetX);
+  const cropOffsetY = useSnipitStore((s) => s.cropOffsetY);
 
-  const setImageMode = useSnipperStore((s) => s.setImageMode);
-  const setCropZoom = useSnipperStore((s) => s.setCropZoom);
-  const setCropOffsetX = useSnipperStore((s) => s.setCropOffsetX);
-  const setCropOffsetY = useSnipperStore((s) => s.setCropOffsetY);
-  const resetCrop = useSnipperStore((s) => s.resetCrop);
+  const setImageMode = useSnipitStore((s) => s.setImageMode);
+  const setArticleImageBw = useSnipitStore((s) => s.setArticleImageBw);
+  const setCropZoom = useSnipitStore((s) => s.setCropZoom);
+  const setCropOffsetX = useSnipitStore((s) => s.setCropOffsetX);
+  const setCropOffsetY = useSnipitStore((s) => s.setCropOffsetY);
+  const resetCrop = useSnipitStore((s) => s.resetCrop);
 
   const showLeft = part === 'all' || part === 'left';
   const showCrop = (part === 'all' || part === 'crop') && imageMode === 'crop';
@@ -137,6 +139,21 @@ export function ImageModeControls({
               name={modeName}
               onSelect={setImageMode}
             />
+            <button
+              type="button"
+              className={[
+                styles.modeOption,
+                embedded ? styles.modeOptionCompact : '',
+                articleImageBw ? styles.modeOptionSelected : '',
+              ]
+                .filter(Boolean)
+                .join(' ')}
+              onClick={() => setArticleImageBw(!articleImageBw)}
+              disabled={imageMode === 'none'}
+              aria-pressed={articleImageBw}
+            >
+              B&W
+            </button>
           </div>
         </div>
       ) : null}

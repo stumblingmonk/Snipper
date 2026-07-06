@@ -1,6 +1,6 @@
 import type { FormatKey } from '@/constants/formats';
 import { FORMAT_LIST } from '@/constants/formats';
-import { useSnipperStore } from '@/store/snipperStore';
+import { useSnipitStore } from '@/store/snipitStore';
 import styles from './FormatPicker.module.css';
 
 function formatIconClass(key: FormatKey): string {
@@ -17,8 +17,8 @@ function formatIconClass(key: FormatKey): string {
 }
 
 export function FormatPicker() {
-  const formatKey = useSnipperStore((s) => s.format);
-  const setFormat = useSnipperStore((s) => s.setFormat);
+  const formatKey = useSnipitStore((s) => s.format);
+  const setFormat = useSnipitStore((s) => s.setFormat);
 
   return (
     <section className={styles.section}>

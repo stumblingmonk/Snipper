@@ -3,7 +3,7 @@ import {
   BUILTIN_SOURCE_LOGOS,
   filterBuiltinSourceLogos,
 } from '@/constants/builtinSourceLogos';
-import { useSnipperStore } from '@/store/snipperStore';
+import { useSnipitStore } from '@/store/snipitStore';
 import styles from './SourceLogoPicker.module.css';
 
 const LOGO_ACCEPT =
@@ -16,14 +16,14 @@ interface SourceLogoPickerProps {
 export function SourceLogoPicker({ searchQuery }: SourceLogoPickerProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const selectedBuiltinLogoId = useSnipperStore((s) => s.selectedBuiltinLogoId);
-  const sourceLogoObjectUrl = useSnipperStore((s) => s.sourceLogoObjectUrl);
-  const showSource = useSnipperStore((s) => s.showSource);
-  const logoUploadError = useSnipperStore((s) => s.logoUploadError);
+  const selectedBuiltinLogoId = useSnipitStore((s) => s.selectedBuiltinLogoId);
+  const sourceLogoObjectUrl = useSnipitStore((s) => s.sourceLogoObjectUrl);
+  const showSource = useSnipitStore((s) => s.showSource);
+  const logoUploadError = useSnipitStore((s) => s.logoUploadError);
 
-  const selectBuiltinSourceLogo = useSnipperStore((s) => s.selectBuiltinSourceLogo);
-  const chooseOtherSourceLogo = useSnipperStore((s) => s.chooseOtherSourceLogo);
-  const setShowSource = useSnipperStore((s) => s.setShowSource);
+  const selectBuiltinSourceLogo = useSnipitStore((s) => s.selectBuiltinSourceLogo);
+  const chooseOtherSourceLogo = useSnipitStore((s) => s.chooseOtherSourceLogo);
+  const setShowSource = useSnipitStore((s) => s.setShowSource);
 
   const hasCustomLogo = Boolean(sourceLogoObjectUrl);
   const filteredLogos = useMemo(

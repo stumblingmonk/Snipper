@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import { usePreviewZoneMetrics } from '@/context/PreviewZoneMetricsContext';
-import { useSnipperStore } from '@/store/snipperStore';
+import { useSnipitStore } from '@/store/snipitStore';
 import {
   computeExcerptOverflowSplitIndex,
   excerptCapacityHeightFromLineClamp,
@@ -25,13 +25,13 @@ export function SnippetEditor({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const highlightRef = useRef<HTMLDivElement>(null);
 
-  const excerpt = useSnipperStore((s) => s.excerpt);
-  const excerptFitStatus = useSnipperStore((s) => s.excerptFitStatus);
-  const excerptResolvedFontSize = useSnipperStore(
+  const excerpt = useSnipitStore((s) => s.excerpt);
+  const excerptFitStatus = useSnipitStore((s) => s.excerptFitStatus);
+  const excerptResolvedFontSize = useSnipitStore(
     (s) => s.excerptResolvedFontSize,
   );
-  const excerptLineClamp = useSnipperStore((s) => s.excerptLineClamp);
-  const setExcerpt = useSnipperStore((s) => s.setExcerpt);
+  const excerptLineClamp = useSnipitStore((s) => s.excerptLineClamp);
+  const setExcerpt = useSnipitStore((s) => s.setExcerpt);
   const { excerptWidth, excerptHeight } = usePreviewZoneMetrics();
 
   const [splitIndex, setSplitIndex] = useState<number | null>(null);

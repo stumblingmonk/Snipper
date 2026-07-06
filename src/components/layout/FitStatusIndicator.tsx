@@ -1,5 +1,5 @@
 import type { FitStatus } from '@/constants/textFit';
-import { useSnipperStore } from '@/store/snipperStore';
+import { useSnipitStore } from '@/store/snipitStore';
 import styles from './FitStatusIndicator.module.css';
 
 interface InlineFitStatusProps {
@@ -33,15 +33,15 @@ function statusClassName(status: FitStatus): string {
 }
 
 export function InlineFitStatus({ field }: InlineFitStatusProps) {
-  const status = useSnipperStore((s) =>
+  const status = useSnipitStore((s) =>
     field === 'headline' ? s.headlineFitStatus : s.excerptFitStatus,
   );
-  const resolvedSize = useSnipperStore((s) =>
+  const resolvedSize = useSnipitStore((s) =>
     field === 'headline'
       ? s.headlineResolvedFontSize
       : s.excerptResolvedFontSize,
   );
-  const autoFit = useSnipperStore((s) =>
+  const autoFit = useSnipitStore((s) =>
     field === 'headline' ? s.headlineAutoFit : s.excerptAutoFit,
   );
 

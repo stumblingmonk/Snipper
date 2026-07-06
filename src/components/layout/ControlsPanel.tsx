@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { BackgroundPicker } from '@/components/layout/BackgroundPicker';
 import { FormatPicker } from '@/components/layout/FormatPicker';
+import { BrandSourcePicker } from '@/components/layout/BrandSourcePicker';
 import { SourceLogoPicker } from '@/components/layout/SourceLogoPicker';
-import { useSnipperStore } from '@/store/snipperStore';
+import { SNIPIT_APP_LOGO_URL } from '@/constants/brandAssets';
+import { useSnipitStore } from '@/store/snipitStore';
 import styles from './ControlsPanel.module.css';
 
 interface ControlsPanelProps {
@@ -24,13 +26,18 @@ export function ControlsPanel({
 }: ControlsPanelProps) {
   const isExporting = exportStatus === 'exporting';
   const [searchQuery, setSearchQuery] = useState('');
-  const sourceName = useSnipperStore((s) => s.sourceName);
-  const setSourceName = useSnipperStore((s) => s.setSourceName);
+  const sourceName = useSnipitStore((s) => s.sourceName);
+  const setSourceName = useSnipitStore((s) => s.setSourceName);
 
   return (
     <aside className={styles.panel}>
       <header className={styles.brandHeader}>
-        <p className={styles.appTitle}>SNIPPER</p>
+        <img
+          className={styles.appLogo}
+          src={SNIPIT_APP_LOGO_URL}
+          alt="SNIPit"
+          draggable={false}
+        />
         <p className={styles.byline}>BY MARK BRINN FOR OBB</p>
         <span className={styles.phaseBadge}>Phase 7C — Background Packs + OBB Mark</span>
       </header>
@@ -74,6 +81,11 @@ export function ControlsPanel({
           />
 
           <SourceLogoPicker searchQuery={searchQuery} />
+        </section>
+
+        <section className={styles.brandSourceSection}>
+          <h3 className={styles.sectionLabel}>Brand Source</h3>
+          <BrandSourcePicker />
         </section>
       </div>
 

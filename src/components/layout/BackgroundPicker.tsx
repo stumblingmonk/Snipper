@@ -1,10 +1,10 @@
 import { getBackgroundPackList } from '@/constants/backgroundPacks';
-import { useSnipperStore } from '@/store/snipperStore';
+import { useSnipitStore } from '@/store/snipitStore';
 import styles from './BackgroundPicker.module.css';
 
 export function BackgroundPicker() {
-  const selectedPackId = useSnipperStore((s) => s.selectedBackgroundPackId);
-  const setSelectedBackgroundPackId = useSnipperStore(
+  const selectedPackId = useSnipitStore((s) => s.selectedBackgroundPackId);
+  const setSelectedBackgroundPackId = useSnipitStore(
     (s) => s.setSelectedBackgroundPackId,
   );
   const packs = getBackgroundPackList();

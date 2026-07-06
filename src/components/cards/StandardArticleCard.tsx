@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import type { CSSProperties, RefObject } from 'react';
 import type { FormatSpec } from '@/constants/formats';
-import { OBB_BRAND_LOGO_URL, OBB_FOOTER_LOGO_WIDTH } from '@/constants/brandAssets';
+import { OBB_FOOTER_LOGO_WIDTH } from '@/constants/brandAssets';
 import {
   CARD_EXCERPT_LINE_HEIGHT,
   CARD_HEADLINE_LINE_HEIGHT,
@@ -24,14 +24,18 @@ export interface StandardArticleCardProps {
   headline: string;
   subhead: string;
   excerpt: string;
+  metadataLine: string | null;
+  attribution: string | null;
   logoUrl: string | null;
   backgroundUrl: string | null;
   backgroundFallbackColor: string;
   imageUrl: string | null;
+  articleImageBw?: boolean;
   headlineFontSize: number;
   excerptFontSize: number;
   excerptLineClamp?: number;
   showImage: boolean;
+  brandLogoUrl: string;
   className?: string;
   id?: string;
   headlineZoneRef?: RefObject<HTMLDivElement | null>;
@@ -177,6 +181,18 @@ function SubheadBlock({ subhead }: { subhead: string }) {
   );
 }
 
+function MetadataLineBlock({ metadataLine }: { metadataLine: string }) {
+  return (
+    <p className={styles.metadataLine}>{metadataLine}</p>
+  );
+}
+
+function AttributionBlock({ attribution }: { attribution: string }) {
+  return (
+    <p className={styles.attribution}>{attribution}</p>
+  );
+}
+
 function ExcerptBlock({
   excerpt,
   excerptFontSize,
@@ -214,12 +230,12 @@ function ExcerptBlock({
   );
 }
 
-function FooterBlock() {
+function FooterBlock({ brandLogoUrl }: { brandLogoUrl: string }) {
   return (
     <footer className={styles.footer}>
       <img
         className={styles.footerObbLogo}
-        src={OBB_BRAND_LOGO_URL}
+        src={brandLogoUrl}
         alt=""
         draggable={false}
       />
@@ -227,9 +243,22 @@ function FooterBlock() {
   );
 }
 
-function ImageBlock({ imageUrl }: { imageUrl: string }) {
+function ImageBlock({
+  imageUrl,
+  articleImageBw = false,
+}: {
+  imageUrl: string;
+  articleImageBw?: boolean;
+}) {
   return (
-    <div className={styles.imageZone}>
+    <div
+      className={[
+        styles.imageZone,
+        articleImageBw ? styles.imageZoneBw : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+    >
       <img
         className={styles.articleImage}
         src={imageUrl}
@@ -240,20 +269,41 @@ function ImageBlock({ imageUrl }: { imageUrl: string }) {
   );
 }
 
+function ArticleImageWithAttribution({
+  imageUrl,
+  articleImageBw = false,
+  attribution,
+}: {
+  imageUrl: string;
+  articleImageBw?: boolean;
+  attribution?: string | null;
+}) {
+  return (
+    <div className={styles.imageBlockWrap}>
+      <ImageBlock imageUrl={imageUrl} articleImageBw={articleImageBw} />
+      {attribution ? <AttributionBlock attribution={attribution} /> : null}
+    </div>
+  );
+}
+
 export function StandardArticleCard({
   format,
   layout,
   headline,
   subhead,
   excerpt,
+  metadataLine,
+  attribution,
   logoUrl,
   backgroundUrl,
   backgroundFallbackColor,
   imageUrl,
+  articleImageBw = false,
   headlineFontSize,
   excerptFontSize,
   excerptLineClamp = 0,
   showImage,
+  brandLogoUrl,
   className,
   id,
   headlineZoneRef,
@@ -306,7 +356,20 @@ export function StandardArticleCard({
     />
   );
 
-  const footerBlock = <FooterBlock />;
+  const metadataBlock = metadataLine ? (
+    <MetadataLineBlock metadataLine={metadataLine} />
+  ) : null;
+
+  const footerBlock = <FooterBlock brandLogoUrl={brandLogoUrl} />;
+
+  const imageBlock =
+    showImage && imageUrl ? (
+      <ArticleImageWithAttribution
+        imageUrl={imageUrl}
+        articleImageBw={articleImageBw}
+        attribution={attribution}
+      />
+    ) : null;
 
   const stackedBlocks = (
     <>
@@ -314,7 +377,8 @@ export function StandardArticleCard({
       {!inlineLogo ? <HeaderBlock logoUrl={logoUrl} layout={layout} /> : null}
       {headlineBlock}
       <SubheadBlock subhead={subhead} />
-      {showImage && imageUrl ? <ImageBlock imageUrl={imageUrl} /> : null}
+      {metadataBlock}
+      {imageBlock}
       {excerptBlock}
       {footerBlock}
     </>
@@ -325,6 +389,7 @@ export function StandardArticleCard({
       {inlineLogo ? <LinkedInBrandRow logoUrl={logoUrl} /> : null}
       {headlineBlock}
       <SubheadBlock subhead={subhead} />
+      {metadataBlock}
       {excerptBlock}
       {footerBlock}
     </div>
@@ -332,9 +397,7 @@ export function StandardArticleCard({
 
   const imageColumn =
     showImage && imageUrl ? (
-      <div className={styles.imageColumn}>
-        <ImageBlock imageUrl={imageUrl} />
-      </div>
+      <div className={styles.imageColumn}>{imageBlock}</div>
     ) : null;
 
   return (

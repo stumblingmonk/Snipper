@@ -17,14 +17,13 @@
   background: var(--panel-bg);
 }
 
-.appTitle {
-  margin: 0;
-  font-family: var(--font-headline);
-  font-size: 24px;
-  font-weight: 400;
-  letter-spacing: 0.06em;
-  line-height: 1;
-  color: var(--text-primary);
+.appLogo {
+  display: block;
+  max-width: 200px;
+  max-height: 52px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
 }
 
 .byline {
@@ -61,6 +60,10 @@
 }
 
 .newsSourceSection {
+  margin-bottom: 16px;
+}
+
+.brandSourceSection {
   margin-bottom: 16px;
 }
 

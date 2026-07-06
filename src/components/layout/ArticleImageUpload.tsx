@@ -2,8 +2,8 @@ import { useRef } from 'react';
 import { ARTICLE_IMAGE_MAX_BYTES } from '@/constants/imageSettings';
 import {
   selectHasUploadedArticleImage,
-  useSnipperStore,
-} from '@/store/snipperStore';
+  useSnipitStore,
+} from '@/store/snipitStore';
 import styles from './ArticleImageUpload.module.css';
 
 const MAX_MB = ARTICLE_IMAGE_MAX_BYTES / (1024 * 1024);
@@ -15,12 +15,12 @@ interface ArticleImageUploadProps {
 export function ArticleImageUpload({ compact = false }: ArticleImageUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const imageMode = useSnipperStore((s) => s.imageMode);
-  const articleImageUploadError = useSnipperStore((s) => s.articleImageUploadError);
-  const hasUploadedImage = useSnipperStore(selectHasUploadedArticleImage);
+  const imageMode = useSnipitStore((s) => s.imageMode);
+  const articleImageUploadError = useSnipitStore((s) => s.articleImageUploadError);
+  const hasUploadedImage = useSnipitStore(selectHasUploadedArticleImage);
 
-  const uploadArticleImage = useSnipperStore((s) => s.uploadArticleImage);
-  const clearUploadedArticleImage = useSnipperStore(
+  const uploadArticleImage = useSnipitStore((s) => s.uploadArticleImage);
+  const clearUploadedArticleImage = useSnipitStore(
     (s) => s.clearUploadedArticleImage,
   );
 

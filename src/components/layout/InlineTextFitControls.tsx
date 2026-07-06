@@ -1,4 +1,4 @@
-import { useSnipperStore } from '@/store/snipperStore';
+import { useSnipitStore } from '@/store/snipitStore';
 import styles from './InlineTextFitControls.module.css';
 
 type TextFitField = 'headline' | 'excerpt';
@@ -10,16 +10,16 @@ interface InlineTextFitControlsProps {
 export function InlineTextFitControls({ field }: InlineTextFitControlsProps) {
   const isHeadline = field === 'headline';
 
-  const sizeStep = useSnipperStore((s) =>
+  const sizeStep = useSnipitStore((s) =>
     isHeadline ? s.headlineSizeStep : s.excerptSizeStep,
   );
-  const autoFit = useSnipperStore((s) =>
+  const autoFit = useSnipitStore((s) =>
     isHeadline ? s.headlineAutoFit : s.excerptAutoFit,
   );
-  const adjustSizeStep = useSnipperStore((s) =>
+  const adjustSizeStep = useSnipitStore((s) =>
     isHeadline ? s.adjustHeadlineSizeStep : s.adjustExcerptSizeStep,
   );
-  const setAutoFit = useSnipperStore((s) =>
+  const setAutoFit = useSnipitStore((s) =>
     isHeadline ? s.setHeadlineAutoFit : s.setExcerptAutoFit,
   );
 
