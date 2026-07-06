@@ -32,6 +32,7 @@ import { ExportDialog, type ExportDialogResult } from '@/components/layout/Expor
 import { PreviewPanel } from '@/components/layout/PreviewPanel';
 import type { PreviewZoneMetrics } from '@/context/PreviewZoneMetricsContext';
 import { PreviewZoneMetricsProvider } from '@/context/PreviewZoneMetricsContext';
+import { registerTestHarness } from '@/dev/registerTestHarness';
 import styles from './App.module.css';
 
 function isFormatKey(value: string): value is FormatKey {
@@ -70,6 +71,13 @@ export default function App() {
   const setFlattenedCropUrl = useSnipitStore((s) => s.setFlattenedCropUrl);
   const setExportStatus = useSnipitStore((s) => s.setExportStatus);
   const setExportProgress = useSnipitStore((s) => s.setExportProgress);
+
+  useEffect(() => {
+    registerTestHarness({
+      setExportRenderTarget,
+      getExportNode: () => exportRef.current,
+    });
+  }, []);
 
   const previewLayout = useMemo(
     () => getStandardArticleLayout(format.key),

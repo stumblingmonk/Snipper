@@ -71,10 +71,10 @@ export interface ComputedArticleZones {
 }
 
 const STORY_HEADLINE_TYPO: TypographyBounds = {
-  min: 54,
+  min: 38,
   default: 50,
   max: 62,
-  autoFitMin: 54,
+  autoFitMin: 38,
   stepPx: 6,
 };
 
@@ -85,6 +85,15 @@ const STORY_EXCERPT_TYPO: TypographyBounds = {
   autoFitMin: 28,
   stepPx: 2,
 };
+
+/** Unified side margin on 1080-wide stacked formats (~72px each side). */
+const STACKED_ZONE_MARGIN_X = 72;
+
+/** LinkedIn text column margin scaled from 1080-wide 72px padding. */
+const LINKEDIN_TEXT_COL_WIDTH = 1200 - 475;
+const LINKEDIN_ZONE_MARGIN_X = Math.round(
+  (STACKED_ZONE_MARGIN_X * LINKEDIN_TEXT_COL_WIDTH) / 1080,
+);
 
 function footerBlockHeight(layout: StandardArticleLayout, hasFooter: boolean): number {
   if (!hasFooter) return 0;
@@ -118,15 +127,59 @@ function computeStackedZones(input: ComputeArticleZonesInput): ComputedArticleZo
   const subheadMarginTop = hasSubhead ? layout.spacing.subheadMarginTop : 0;
   const subheadMaxHeight = hasSubhead ? layout.subheadZoneHeight : 0;
 
+  const excerptHeight = computeStackedExcerptHeight(input);
+
   return {
     zoneMarginX,
     headlineZone: { width: contentW, height: headlineMaxHeight },
-    excerptZone: { width: contentW, height: 0 },
-    imageFrame: { width: contentW, height: imageFrameHeight },
+    excerptZone: {
+      width: contentW,
+      height: excerptHeight,
+    },
+    imageFrame: showImage
+      ? { width: contentW, height: imageFrameHeight }
+      : { width: contentW, height: 0 },
     subheadZoneHeight: subheadMaxHeight,
     subheadMarginTop,
     split: false,
   };
+}
+
+export function computeStackedExcerptHeight(
+  input: ComputeArticleZonesInput,
+): number {
+  const { layout, format, showImage, hasSubhead, hasLogo, hasFooter } = input;
+  const innerH = format.height - layout.cardPadding * 2;
+  const innerW = format.width - layout.cardPadding * 2;
+  const contentW = innerW - layout.zoneMarginX * 2;
+  const ratio = layout.stackedImageHeightRatio ?? 0.75;
+  const imageFrameHeight = stackedImageFrameHeight(contentW, ratio);
+
+  const logoHeaderH = hasLogo
+    ? layout.header.paddingTop +
+      layout.header.logoMaxHeight +
+      layout.header.paddingBottom
+    : layout.header.paddingTop;
+
+  const headlineH =
+    !showImage && layout.noImageHeadlineHeight
+      ? layout.noImageHeadlineHeight
+      : layout.headlineZone.height;
+
+  const subheadMarginTop = hasSubhead ? layout.spacing.subheadMarginTop : 0;
+  const subheadH = hasSubhead ? layout.subheadZoneHeight : 0;
+  const imageBlockH = showImage
+    ? layout.spacing.imageMarginTop + imageFrameHeight
+    : 0;
+  const excerptMargin = showImage
+    ? layout.spacing.excerptMarginTop
+    : layout.spacing.excerptMarginTopNoImage;
+  const footerH = footerBlockHeight(layout, hasFooter);
+
+  const available =
+    innerH - logoHeaderH - headlineH - subheadMarginTop - subheadH - imageBlockH - excerptMargin - footerH;
+
+  return Math.max(layout.excerptMinHeight, available);
 }
 
 function computeLinkedInSplitZones(input: ComputeArticleZonesInput): ComputedArticleZones {
@@ -147,9 +200,9 @@ function computeLinkedInSplitZones(input: ComputeArticleZonesInput): ComputedArt
   const excerptMargin = layout.spacing.excerptMarginTop;
   const footerH = footerBlockHeight(layout, hasFooter);
 
-  const used =
-    logoRowH + headlineH + subheadMarginTop + subheadH + excerptMargin + footerH;
-  const excerptH = Math.max(layout.excerptMinHeight, innerH - used);
+  const bodyH = innerH - footerH;
+  const used = logoRowH + headlineH + subheadMarginTop + subheadH + excerptMargin;
+  const excerptH = Math.max(layout.excerptMinHeight, bodyH - used);
 
   return {
     zoneMarginX,
@@ -162,12 +215,12 @@ function computeLinkedInSplitZones(input: ComputeArticleZonesInput): ComputedArt
   };
 }
 
-/** Story — measured safe area: 110px sides, 75px top, 65px bottom; 860px content width. */
+/** Story — unified 72px side margins; taller headline/subhead caps for calibration copy. */
 const STORY_LAYOUT: StandardArticleLayout = {
   formatKey: 'story',
   layoutVariant: 'stacked',
   cardPadding: 0,
-  zoneMarginX: 110,
+  zoneMarginX: STACKED_ZONE_MARGIN_X,
   containerRadius: 0,
   logoPlacement: 'centered',
   header: {
@@ -176,58 +229,58 @@ const STORY_LAYOUT: StandardArticleLayout = {
     logoMaxWidth: 490,
     logoMaxHeight: 125,
   },
-  headlineZone: { width: 860, height: 270 },
-  subheadZoneHeight: 104,
+  headlineZone: { width: 936, height: 480 },
+  subheadZoneHeight: 128,
   subheadFontSize: 34,
-  imageFrame: { width: 860, height: 645 },
+  imageFrame: { width: 936, height: 645 },
   excerptMinHeight: 80,
   footer: { paddingTop: 32, paddingBottom: 65, fontSize: 18 },
   spacing: {
-    subheadMarginTop: 35,
+    subheadMarginTop: 28,
     imageMarginTop: 35,
     excerptMarginTop: 35,
-    excerptMarginTopNoImage: 35,
+    excerptMarginTopNoImage: 24,
   },
-  noImageHeadlineHeight: 320,
+  noImageHeadlineHeight: 480,
   headlineTypo: STORY_HEADLINE_TYPO,
   excerptTypo: STORY_EXCERPT_TYPO,
   backgroundAsset: PROVIDED_BACKGROUNDS.story,
   fallbackBackgroundColor: '#e8e4dc',
 };
 
-/** Square — editorial stack tuned for ~⅓ image / ⅓ body balance. */
+/** Square — unified 72px side margins; taller text caps for long headline/subhead. */
 const SQUARE_LAYOUT: StandardArticleLayout = {
   formatKey: 'square',
   layoutVariant: 'stacked',
   cardPadding: 0,
-  zoneMarginX: 140,
+  zoneMarginX: STACKED_ZONE_MARGIN_X,
   containerRadius: 0,
   logoPlacement: 'centered',
-  stackedImageHeightRatio: 0.45,
+  stackedImageHeightRatio: 0.3,
   header: {
-    paddingTop: 40,
-    paddingBottom: 18,
+    paddingTop: 36,
+    paddingBottom: 14,
     logoMaxWidth: 300,
     logoMaxHeight: 72,
   },
-  headlineZone: { width: 800, height: 96 },
-  subheadZoneHeight: 78,
+  headlineZone: { width: 936, height: 520 },
+  subheadZoneHeight: 96,
   subheadFontSize: 24,
-  imageFrame: { width: 800, height: 360 },
+  imageFrame: { width: 936, height: 300 },
   excerptMinHeight: 56,
   footer: { paddingTop: 18, paddingBottom: 36, fontSize: 15 },
   spacing: {
-    subheadMarginTop: 12,
-    imageMarginTop: 18,
-    excerptMarginTop: 18,
-    excerptMarginTopNoImage: 8,
+    subheadMarginTop: 14,
+    imageMarginTop: 16,
+    excerptMarginTop: 16,
+    excerptMarginTopNoImage: 12,
   },
-  noImageHeadlineHeight: 160,
+  noImageHeadlineHeight: 240,
   headlineTypo: {
-    min: 40,
+    min: 26,
     default: 40,
     max: 46,
-    autoFitMin: 40,
+    autoFitMin: 26,
     stepPx: 5,
   },
   excerptTypo: {
@@ -256,24 +309,24 @@ const PORTRAIT_LAYOUT: StandardArticleLayout = {
     logoMaxWidth: 360,
     logoMaxHeight: 84,
   },
-  headlineZone: { width: 936, height: 190 },
-  subheadZoneHeight: 96,
+  headlineZone: { width: 936, height: 420 },
+  subheadZoneHeight: 112,
   subheadFontSize: 28,
   imageFrame: { width: 936, height: 374 },
   excerptMinHeight: 72,
   footer: { paddingTop: 22, paddingBottom: 44, fontSize: 16 },
   spacing: {
-    subheadMarginTop: 16,
+    subheadMarginTop: 18,
     imageMarginTop: 24,
     excerptMarginTop: 22,
-    excerptMarginTopNoImage: 10,
+    excerptMarginTopNoImage: 14,
   },
-  noImageHeadlineHeight: 240,
+  noImageHeadlineHeight: 380,
   headlineTypo: {
-    min: 46,
+    min: 34,
     default: 44,
     max: 52,
-    autoFitMin: 46,
+    autoFitMin: 34,
     stepPx: 6,
   },
   excerptTypo: {
@@ -293,7 +346,7 @@ const LINKEDIN_LAYOUT: StandardArticleLayout = {
   layoutVariant: 'split',
   splitImageSide: 'right',
   cardPadding: 0,
-  zoneMarginX: 32,
+  zoneMarginX: LINKEDIN_ZONE_MARGIN_X,
   containerRadius: 0,
   logoPlacement: 'inlineAboveHeadline',
   header: {
@@ -302,24 +355,24 @@ const LINKEDIN_LAYOUT: StandardArticleLayout = {
     logoMaxWidth: 240,
     logoMaxHeight: 60,
   },
-  headlineZone: { width: 584, height: 88 },
-  subheadZoneHeight: 52,
+  headlineZone: { width: 584, height: 300 },
+  subheadZoneHeight: 72,
   subheadFontSize: 18,
   imageFrame: { width: 475, height: 627 },
   excerptMinHeight: 64,
   footer: { paddingTop: 10, paddingBottom: 16, fontSize: 11 },
   spacing: {
-    subheadMarginTop: 4,
+    subheadMarginTop: 6,
     imageMarginTop: 0,
     excerptMarginTop: 8,
     excerptMarginTopNoImage: 8,
   },
-  noImageHeadlineHeight: 92,
+  noImageHeadlineHeight: 200,
   headlineTypo: {
-    min: 28,
-    default: 30,
-    max: 34,
-    autoFitMin: 28,
+    min: 20,
+    default: 28,
+    max: 32,
+    autoFitMin: 20,
     stepPx: 4,
   },
   excerptTypo: {

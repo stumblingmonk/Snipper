@@ -55,7 +55,7 @@ export function ControlsPanel({
           draggable={false}
         />
         <p className={styles.byline}>BY MARK BRINN FOR OBB</p>
-        <span className={styles.phaseBadge}>Phase 9 — Export UX</span>
+        <span className={styles.phaseBadge}>Phase 12 — Wide Overlay + Headlines</span>
       </header>
 
       <div className={styles.panelBody}>

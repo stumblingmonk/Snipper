@@ -7,6 +7,9 @@ import {
 import {
   CARD_EXCERPT_LETTER_SPACING,
   CARD_EXCERPT_LINE_HEIGHT,
+  CARD_HEADLINE_FONT_FAMILY,
+  CARD_HEADLINE_LETTER_SPACING,
+  CARD_HEADLINE_LINE_HEIGHT,
 } from '@/constants/cardTypography';
 
 export function elementOverflows(element: HTMLElement): boolean {
@@ -40,6 +43,10 @@ export interface OffscreenTextFitStyle {
   lineHeight: number;
   letterSpacing?: string;
   whiteSpace?: string;
+  textTransform?: string;
+  wordBreak?: string;
+  overflowWrap?: string;
+  hyphens?: string;
   width: number;
   height: number;
 }
@@ -88,6 +95,10 @@ function applyOffscreenTypography(
   host.style.lineHeight = String(style.lineHeight);
   host.style.letterSpacing = style.letterSpacing ?? 'normal';
   host.style.whiteSpace = style.whiteSpace ?? 'normal';
+  host.style.textTransform = style.textTransform ?? 'none';
+  host.style.wordBreak = style.wordBreak ?? 'break-word';
+  host.style.overflowWrap = style.overflowWrap ?? 'break-word';
+  host.style.hyphens = style.hyphens ?? 'manual';
   host.textContent = text;
 }
 
@@ -236,6 +247,21 @@ export function visibleHeightFromLineClamp(
   if (lineClamp <= 0 || fontSize <= 0) return 0;
   return Math.floor(lineClamp * fontSize * lineHeight);
 }
+
+export const DEFAULT_HEADLINE_OFFSCREEN_STYLE: Omit<
+  OffscreenTextFitStyle,
+  'width' | 'height'
+> = {
+  fontFamily: CARD_HEADLINE_FONT_FAMILY,
+  fontWeight: 400,
+  lineHeight: CARD_HEADLINE_LINE_HEIGHT,
+  letterSpacing: CARD_HEADLINE_LETTER_SPACING,
+  whiteSpace: 'normal',
+  textTransform: 'uppercase',
+  wordBreak: 'normal',
+  overflowWrap: 'break-word',
+  hyphens: 'auto',
+};
 
 export const DEFAULT_EXCERPT_OFFSCREEN_STYLE: Omit<
   OffscreenTextFitStyle,

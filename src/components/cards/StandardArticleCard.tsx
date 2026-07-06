@@ -4,7 +4,6 @@ import type { FormatSpec } from '@/constants/formats';
 import { OBB_FOOTER_LOGO_WIDTH } from '@/constants/brandAssets';
 import {
   CARD_EXCERPT_LINE_HEIGHT,
-  CARD_HEADLINE_LINE_HEIGHT,
 } from '@/constants/cardTypography';
 import type { StandardArticleLayout } from '@/constants/standardArticleLayouts';
 import {
@@ -12,7 +11,6 @@ import {
   usesSplitLayout,
 } from '@/constants/standardArticleLayouts';
 import {
-  computeLineClamp,
   visibleHeightFromLineClamp,
 } from '@/utils/textFitMeasure';
 import styles from './StandardArticleCard.module.css';
@@ -42,6 +40,12 @@ export interface StandardArticleCardProps {
   id?: string;
   headlineZoneRef?: RefObject<HTMLDivElement | null>;
   excerptZoneRef?: RefObject<HTMLDivElement | null>;
+}
+
+function formatSubheadText(subhead: string): string {
+  return subhead.replace(/more than 25 years/gi, (match) =>
+    match.replace(/ /g, '\u00a0'),
+  );
 }
 
 function layoutCssVariables(
@@ -124,7 +128,7 @@ function LinkedInBrandRow({ logoUrl }: { logoUrl: string | null }) {
 
   return (
     <div className={styles.linkedinBrandRow}>
-      <LogoBlock logoUrl={logoUrl} centered />
+      <LogoBlock logoUrl={logoUrl} centered={false} />
     </div>
   );
 }
@@ -132,31 +136,12 @@ function LinkedInBrandRow({ logoUrl }: { logoUrl: string | null }) {
 function HeadlineBlock({
   headline,
   headlineFontSize,
-  headlineMaxCapHeight,
   headlineZoneRef,
 }: {
   headline: string;
   headlineFontSize: number;
-  headlineMaxCapHeight: number;
   headlineZoneRef?: RefObject<HTMLDivElement | null>;
 }) {
-  const headlineLineClamp = computeLineClamp(
-    headlineMaxCapHeight,
-    headlineFontSize,
-    CARD_HEADLINE_LINE_HEIGHT,
-  );
-  const headlineVisibleHeight = visibleHeightFromLineClamp(
-    headlineLineClamp,
-    headlineFontSize,
-    CARD_HEADLINE_LINE_HEIGHT,
-  );
-  const headlineStyle =
-    headlineVisibleHeight > 0
-      ? ({
-          '--sa-headline-visible-height': `${headlineVisibleHeight}px`,
-        } as CSSProperties)
-      : undefined;
-
   return (
     <div
       ref={headlineZoneRef}
@@ -164,9 +149,7 @@ function HeadlineBlock({
       data-fit-zone="headline"
       style={{ fontSize: headlineFontSize }}
     >
-      <h1 className={styles.headline} style={headlineStyle}>
-        {headline}
-      </h1>
+      <h1 className={styles.headline}>{headline}</h1>
     </div>
   );
 }
@@ -177,7 +160,7 @@ function SubheadBlock({ subhead }: { subhead: string }) {
   return (
     <div className={styles.subheadZone}>
       <p className={styles.subhead}>
-        <span className={styles.subheadHighlight}>{subhead}</span>
+        <span className={styles.subheadHighlight}>{formatSubheadText(subhead)}</span>
       </p>
     </div>
   );
@@ -189,9 +172,17 @@ function MetadataLineBlock({ metadataLine }: { metadataLine: string }) {
   );
 }
 
-function AttributionBlock({ attribution }: { attribution: string }) {
+function AttributionBlock({
+  attribution,
+  className,
+}: {
+  attribution: string;
+  className?: string;
+}) {
   return (
-    <p className={styles.attribution}>{attribution}</p>
+    <p className={[styles.attribution, className].filter(Boolean).join(' ')}>
+      {attribution}
+    </p>
   );
 }
 
@@ -236,16 +227,22 @@ function FooterBlock({
   brandLogoUrl,
   pageNumber,
   pageTotal,
+  wide,
 }: {
   brandLogoUrl: string;
   pageNumber?: number;
   pageTotal?: number;
+  wide?: boolean;
 }) {
   const showPageNumber =
     pageTotal !== undefined && pageTotal > 1 && pageNumber !== undefined;
 
   return (
-    <footer className={styles.footer}>
+    <footer
+      className={[styles.footer, wide ? styles.footerWide : styles.footerStacked]
+        .filter(Boolean)
+        .join(' ')}
+    >
       <img
         className={styles.footerObbLogo}
         src={brandLogoUrl}
@@ -287,7 +284,7 @@ function ImageBlock({
   );
 }
 
-function ArticleImageWithAttribution({
+function StackedImageWithAttribution({
   imageUrl,
   articleImageBw = false,
   attribution,
@@ -300,6 +297,43 @@ function ArticleImageWithAttribution({
     <div className={styles.imageBlockWrap}>
       <ImageBlock imageUrl={imageUrl} articleImageBw={articleImageBw} />
       {attribution ? <AttributionBlock attribution={attribution} /> : null}
+    </div>
+  );
+}
+
+function WideImageColumn({
+  imageUrl,
+  articleImageBw = false,
+  attribution,
+}: {
+  imageUrl: string;
+  articleImageBw?: boolean;
+  attribution?: string | null;
+}) {
+  return (
+    <div className={styles.imageColumn}>
+      <div
+        className={[
+          styles.imageZone,
+          styles.imageZoneFullBleed,
+          articleImageBw ? styles.imageZoneBw : '',
+        ]
+          .filter(Boolean)
+          .join(' ')}
+      >
+        <img
+          className={styles.articleImage}
+          src={imageUrl}
+          alt=""
+          draggable={false}
+        />
+        {attribution ? (
+          <>
+            <div className={styles.imageCreditGradient} aria-hidden="true" />
+            <p className={styles.imageCreditOverlay}>{attribution}</p>
+          </>
+        ) : null}
+      </div>
     </div>
   );
 }
@@ -332,6 +366,7 @@ export function StandardArticleCard({
   const hasSubhead = Boolean(subhead.trim());
   const hasLogo = Boolean(logoUrl);
   const hasFooter = true;
+  const isWide = layout.formatKey === 'linkedin';
 
   const zones = useMemo(
     () =>
@@ -362,7 +397,6 @@ export function StandardArticleCard({
     <HeadlineBlock
       headline={headline}
       headlineFontSize={headlineFontSize}
-      headlineMaxCapHeight={zones.headlineZone.height}
       headlineZoneRef={headlineZoneRef}
     />
   );
@@ -385,45 +419,55 @@ export function StandardArticleCard({
       brandLogoUrl={brandLogoUrl}
       pageNumber={pageNumber}
       pageTotal={pageTotal}
+      wide={isWide}
     />
   );
 
-  const imageBlock =
+  const stackedImageBlock =
     showImage && imageUrl ? (
-      <ArticleImageWithAttribution
+      <StackedImageWithAttribution
         imageUrl={imageUrl}
         articleImageBw={articleImageBw}
         attribution={attribution}
       />
     ) : null;
 
-  const stackedBlocks = (
+  const stackedMainContent = (
     <>
       {inlineLogo ? <LinkedInBrandRow logoUrl={logoUrl} /> : null}
       {!inlineLogo ? <HeaderBlock logoUrl={logoUrl} layout={layout} /> : null}
       {headlineBlock}
       <SubheadBlock subhead={subhead} />
       {metadataBlock}
-      {imageBlock}
+      {stackedImageBlock}
       {excerptBlock}
-      {footerBlock}
     </>
   );
 
-  const textColumn = (
-    <div className={styles.textColumn}>
+  const textColumnBody = (
+    <>
       {inlineLogo ? <LinkedInBrandRow logoUrl={logoUrl} /> : null}
       {headlineBlock}
       <SubheadBlock subhead={subhead} />
       {metadataBlock}
       {excerptBlock}
-      {footerBlock}
+    </>
+  );
+
+  const textColumn = (
+    <div className={styles.textColumn}>
+      <div className={styles.textColumnBody}>{textColumnBody}</div>
+      {split ? footerBlock : null}
     </div>
   );
 
   const imageColumn =
     showImage && imageUrl ? (
-      <div className={styles.imageColumn}>{imageBlock}</div>
+      <WideImageColumn
+        imageUrl={imageUrl}
+        articleImageBw={articleImageBw}
+        attribution={attribution}
+      />
     ) : null;
 
   return (
@@ -441,13 +485,16 @@ export function StandardArticleCard({
     >
       <div className={containerClass}>
         {split ? (
-          <>
+          <div className={styles.splitBody}>
             {imageOnLeft ? imageColumn : null}
             {textColumn}
             {!imageOnLeft ? imageColumn : null}
-          </>
+          </div>
         ) : (
-          stackedBlocks
+          <>
+            <div className={styles.mainContent}>{stackedMainContent}</div>
+            {footerBlock}
+          </>
         )}
       </div>
     </article>

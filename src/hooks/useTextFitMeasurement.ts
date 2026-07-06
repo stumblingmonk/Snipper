@@ -113,10 +113,13 @@ export function useTextFitMeasurement({
         },
       });
 
-      const excerptLineClamp = computeExcerptLineClamp(
-        excerptHeight,
-        excerptResult.resolvedSize,
-      );
+      const excerptLineClamp =
+        excerptResult.status === 'too-long'
+          ? computeExcerptLineClamp(
+              excerptHeight,
+              excerptResult.resolvedSize,
+            )
+          : 0;
 
       setTextFitResult({
         headlineResolvedFontSize: headlineResult.resolvedSize,

@@ -14,6 +14,7 @@ import {
 } from '@/store/selectors';
 import { selectPageAt, type SnipitState } from '@/store/snipitStore';
 import type { ArticlePage } from '@/types/articlePage';
+import { resolveExportTextFit } from '@/utils/exportTextFit';
 import { flattenImage } from '@/utils/flattenImage';
 
 export async function flattenPageImage(
@@ -61,6 +62,7 @@ export function buildCardPropsForPage(
   const layout = getStandardArticleLayout(formatKey);
   const background = resolveFormatBackground(state, formatKey);
   const showImage = page.imageMode !== 'none' && Boolean(flattenedUrl);
+  const textFit = resolveExportTextFit(state, formatKey, pageIndex);
 
   return {
     format,
@@ -80,8 +82,8 @@ export function buildCardPropsForPage(
     showImage,
     pageNumber: pageIndex + 1,
     pageTotal: state.pages.length,
-    headlineFontSize: state.headlineResolvedFontSize,
-    excerptFontSize: page.excerptResolvedFontSize,
-    excerptLineClamp: page.excerptLineClamp,
+    headlineFontSize: textFit.headlineFontSize,
+    excerptFontSize: textFit.excerptFontSize,
+    excerptLineClamp: textFit.excerptLineClamp,
   };
 }
