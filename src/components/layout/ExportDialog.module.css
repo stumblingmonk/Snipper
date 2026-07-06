@@ -1,0 +1,228 @@
+.exportDialogOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(0, 0, 0, 0.62);
+}
+
+.exportDialog {
+  width: min(520px, 100%);
+  max-height: min(88vh, 720px);
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  background: var(--panel-bg);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.45);
+}
+
+.exportDialogHeader {
+  padding: 18px 20px 12px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.exportDialogTitle {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.exportDialogSubtitle {
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+.exportDialogBody {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fieldLabel {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.textInput,
+.dateInput {
+  width: 100%;
+  min-height: 36px;
+  padding: 8px 10px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  background: var(--panel-bg-soft);
+  color: var(--text-primary);
+}
+
+.textInput:focus,
+.dateInput:focus {
+  outline: 2px solid var(--accent-soft);
+  border-color: var(--accent);
+}
+
+.namingModes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.namingModeOption {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  background: var(--panel-bg-soft);
+  cursor: pointer;
+}
+
+.namingModeOptionActive {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.namingModeInput {
+  margin-top: 2px;
+}
+
+.namingModeCopy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.namingModeTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.namingModeHint {
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--text-secondary);
+}
+
+.folderRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.folderName {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  background: var(--panel-bg-soft);
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.folderButton,
+.secondaryButton {
+  flex-shrink: 0;
+  min-height: 34px;
+  padding: 7px 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  background: var(--panel-bg-raised);
+  color: var(--text-primary);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.folderButton:hover:not(:disabled),
+.secondaryButton:hover:not(:disabled) {
+  border-color: var(--border-strong);
+  background: var(--panel-bg-soft);
+}
+
+.folderButton:disabled,
+.secondaryButton:disabled {
+  opacity: 0.55;
+}
+
+.fallbackNote {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--text-muted);
+}
+
+.previewList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  background: var(--panel-bg-soft);
+  max-height: 180px;
+  overflow: auto;
+}
+
+.previewItem {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border-subtle);
+  font-family: var(--font-subhead);
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--text-secondary);
+  word-break: break-all;
+}
+
+.previewItem:last-child {
+  border-bottom: none;
+}
+
+.exportDialogFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 14px 20px 18px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.primaryButton {
+  min-height: 36px;
+  padding: 8px 14px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: var(--accent);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.primaryButton:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.primaryButton:disabled {
+  opacity: 0.55;
+}

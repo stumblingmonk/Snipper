@@ -1,18 +1,20 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   FORMATS,
-  FORMAT_LIST,
-  getCarouselExportFilename,
   type FormatKey,
 } from '@/constants/formats';
 import { FLATTEN_DEBOUNCE_MS } from '@/constants/imageSettings';
 import { computeArticleZones, getStandardArticleLayout } from '@/constants/standardArticleLayouts';
-import { exportCardPng } from '@/utils/exportCard';
 import { flattenImage } from '@/utils/flattenImage';
 import {
   buildCardPropsForPage,
-  flattenPageImage,
 } from '@/utils/carouselExport';
+import {
+  runCardExportLoop,
+  type ExportRenderTarget,
+} from '@/utils/cardExportLoop';
+import { createExportWriter } from '@/utils/exportDestination';
+import type { ExportScope } from '@/utils/exportFilename';
 import {
   resolveFormatBackground,
   resolveSourceLogoUrl,
@@ -26,6 +28,7 @@ import { PreviewCardWithTextFit } from '@/components/cards/PreviewCardWithTextFi
 import { StandardArticleCard } from '@/components/cards/StandardArticleCard';
 import { ControlsPanel } from '@/components/layout/ControlsPanel';
 import { ContentWorkspace } from '@/components/layout/ContentWorkspace';
+import { ExportDialog, type ExportDialogResult } from '@/components/layout/ExportDialog';
 import { PreviewPanel } from '@/components/layout/PreviewPanel';
 import type { PreviewZoneMetrics } from '@/context/PreviewZoneMetricsContext';
 import { PreviewZoneMetricsProvider } from '@/context/PreviewZoneMetricsContext';
@@ -33,12 +36,6 @@ import styles from './App.module.css';
 
 function isFormatKey(value: string): value is FormatKey {
   return value in FORMATS;
-}
-
-interface ExportRenderTarget {
-  formatKey: FormatKey;
-  pageIndex: number;
-  flattenedUrl: string | null;
 }
 
 function waitForPaint(): Promise<void> {
@@ -54,6 +51,7 @@ export default function App() {
   const flattenGenerationRef = useRef(0);
   const flattenTimeoutRef = useRef<number | null>(null);
   const [flattenPending, setFlattenPending] = useState(false);
+  const [exportDialogScope, setExportDialogScope] = useState<ExportScope | null>(null);
   const [exportRenderTarget, setExportRenderTarget] =
     useState<ExportRenderTarget | null>(null);
 
@@ -78,6 +76,7 @@ export default function App() {
     [format.key],
   );
 
+  const headline = useSnipitStore((s) => s.headline);
   const logoUrl = useSnipitStore(resolveSourceLogoUrl);
   const subhead = useSnipitStore((s) => s.subhead);
 
@@ -223,84 +222,56 @@ export default function App() {
     ? FORMATS[exportRenderTarget.formatKey]
     : format;
 
-  const handleExport = useCallback(async () => {
-    const node = exportRef.current;
-    if (!node) return;
-
-    const state = useSnipitStore.getState();
-    const totalExports = state.pages.length * FORMAT_LIST.length;
-
-    setExportStatus('exporting');
-    setExportProgress({ completed: 0, total: totalExports, detail: 'Preparing…' });
-
-    let completed = 0;
-    let lastSize: { width: number; height: number } | null = null;
-    const flattenedCache = new Map<string, string | null>();
-
-    try {
-      for (const formatSpec of FORMAT_LIST) {
-        for (let pageIndex = 0; pageIndex < state.pages.length; pageIndex++) {
-          const page = state.pages[pageIndex];
-          const cacheKey = `${formatSpec.key}:${page.id}`;
-
-          let flattenedUrl: string | null = null;
-          if (page.imageMode !== 'none' && page.articleImageObjectUrl) {
-            if (flattenedCache.has(cacheKey)) {
-              flattenedUrl = flattenedCache.get(cacheKey) ?? null;
-            } else {
-              flattenedUrl = await flattenPageImage(state, page, formatSpec.key);
-              flattenedCache.set(cacheKey, flattenedUrl);
-            }
-          }
-
-          setExportRenderTarget({
-            formatKey: formatSpec.key,
-            pageIndex,
-            flattenedUrl,
-          });
-          setExportProgress({
-            completed,
-            total: totalExports,
-            detail: `${formatSpec.label} — page ${pageIndex + 1} of ${state.pages.length}`,
-          });
-
-          await waitForPaint();
-
-          const size = await exportCardPng({
-            node,
-            width: formatSpec.width,
-            height: formatSpec.height,
-            filename: getCarouselExportFilename(
-              formatSpec.key,
-              pageIndex + 1,
-              state.pages.length,
-            ),
-          });
-
-          lastSize = size;
-          completed += 1;
-          setExportProgress({
-            completed,
-            total: totalExports,
-            detail: `${formatSpec.label} — page ${pageIndex + 1} of ${state.pages.length}`,
-          });
-        }
+  const handleExportConfirm = useCallback(
+    async (result: ExportDialogResult) => {
+      const node = exportRef.current;
+      if (!node) {
+        return;
       }
 
-      setExportStatus('done', null, lastSize);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Export failed';
-      setExportStatus('error', message);
-    } finally {
-      setExportRenderTarget(null);
-      setExportProgress(null);
-      for (const url of flattenedCache.values()) {
-        if (url) {
-          URL.revokeObjectURL(url);
+      setExportStatus('exporting');
+      setExportProgress({
+        completed: 0,
+        total: result.entries.length,
+        detail: 'Preparing…',
+      });
+
+      const writer = await createExportWriter(
+        result.namingMode,
+        result.directoryHandle,
+      );
+
+      try {
+        const lastSize = await runCardExportLoop({
+          node,
+          entries: result.entries,
+          setRenderTarget: setExportRenderTarget,
+          onProgress: setExportProgress,
+          writeFile: (blob, filename, index) =>
+            writer.write(blob, filename, index),
+          waitForPaint,
+        });
+
+        setExportStatus('done', null, lastSize);
+        setExportDialogScope(null);
+      } catch (err) {
+        if (err instanceof DOMException && err.name === 'AbortError') {
+          setExportStatus('idle');
+        } else {
+          const message = err instanceof Error ? err.message : 'Export failed';
+          setExportStatus('error', message);
         }
+      } finally {
+        writer.dispose();
+        setExportProgress(null);
       }
-    }
-  }, [setExportProgress, setExportStatus]);
+    },
+    [setExportProgress, setExportStatus],
+  );
+
+  const openExportDialog = useCallback((scope: ExportScope) => {
+    setExportDialogScope(scope);
+  }, []);
 
   const [previewZoneMetrics, setPreviewZoneMetrics] = useState<PreviewZoneMetrics>({
     excerptWidth: 0,
@@ -342,7 +313,8 @@ export default function App() {
         <div className={styles.columns}>
           <div className={styles.columnShell}>
             <ControlsPanel
-              onExport={handleExport}
+              onExportCurrentFormat={() => openExportDialog('current-format')}
+              onExportAllFormats={() => openExportDialog('all-formats')}
               exportStatus={exportStatus}
               exportError={exportError}
               exportProgress={exportProgress}
@@ -350,6 +322,7 @@ export default function App() {
               backgroundFallbackNote={backgroundFallbackNote}
               exportDisabled={exportBlocked}
               pageCount={pages.length}
+              currentFormatLabel={format.label}
             />
           </div>
 
@@ -398,6 +371,21 @@ export default function App() {
             />
           </div>
         </div>
+
+        <ExportDialog
+          isOpen={exportDialogScope !== null}
+          scope={exportDialogScope ?? 'current-format'}
+          currentFormatKey={format.key}
+          pageCount={pages.length}
+          headline={headline}
+          isExporting={exportStatus === 'exporting'}
+          onClose={() => {
+            if (exportStatus !== 'exporting') {
+              setExportDialogScope(null);
+            }
+          }}
+          onConfirm={handleExportConfirm}
+        />
       </div>
     </PreviewZoneMetricsProvider>
   );

@@ -4,12 +4,14 @@ import { FormatPicker } from '@/components/layout/FormatPicker';
 import { BrandSourcePicker } from '@/components/layout/BrandSourcePicker';
 import { SourceLogoPicker } from '@/components/layout/SourceLogoPicker';
 import { SNIPIT_APP_LOGO_URL } from '@/constants/brandAssets';
+import { FORMAT_LIST } from '@/constants/formats';
 import { useSnipitStore } from '@/store/snipitStore';
 import type { ExportProgress } from '@/store/snipitStore';
 import styles from './ControlsPanel.module.css';
 
 interface ControlsPanelProps {
-  onExport: () => void;
+  onExportCurrentFormat: () => void;
+  onExportAllFormats: () => void;
   exportStatus: 'idle' | 'exporting' | 'done' | 'error';
   exportError: string | null;
   exportProgress: ExportProgress | null;
@@ -17,10 +19,12 @@ interface ControlsPanelProps {
   backgroundFallbackNote: string | null;
   exportDisabled?: boolean;
   pageCount: number;
+  currentFormatLabel: string;
 }
 
 export function ControlsPanel({
-  onExport,
+  onExportCurrentFormat,
+  onExportAllFormats,
   exportStatus,
   exportError,
   exportProgress,
@@ -28,11 +32,18 @@ export function ControlsPanel({
   backgroundFallbackNote,
   exportDisabled = false,
   pageCount,
+  currentFormatLabel,
 }: ControlsPanelProps) {
   const isExporting = exportStatus === 'exporting';
   const [searchQuery, setSearchQuery] = useState('');
   const sourceName = useSnipitStore((s) => s.sourceName);
   const setSourceName = useSnipitStore((s) => s.setSourceName);
+
+  const currentFormatExportLabel =
+    pageCount === 1
+      ? `Export ${currentFormatLabel} PNG (${pageCount})`
+      : `Export ${currentFormatLabel} PNGs (${pageCount})`;
+  const allFormatsExportLabel = `Export All Formats (${pageCount * FORMAT_LIST.length})`;
 
   return (
     <aside className={styles.panel}>
@@ -44,7 +55,7 @@ export function ControlsPanel({
           draggable={false}
         />
         <p className={styles.byline}>BY MARK BRINN FOR OBB</p>
-        <span className={styles.phaseBadge}>Phase 8 — Multi-page Carousel</span>
+        <span className={styles.phaseBadge}>Phase 9 — Export UX</span>
       </header>
 
       <div className={styles.panelBody}>
@@ -98,10 +109,20 @@ export function ControlsPanel({
         <button
           type="button"
           className={styles.exportButton}
-          onClick={onExport}
+          onClick={onExportCurrentFormat}
           disabled={isExporting || exportDisabled}
         >
-          {isExporting ? 'Exporting…' : 'Export All PNGs'}
+          {isExporting ? 'Exporting…' : currentFormatExportLabel}
+        </button>
+
+        <button
+          type="button"
+          className={[styles.exportButton, styles.exportButtonSecondary]
+            .join(' ')}
+          onClick={onExportAllFormats}
+          disabled={isExporting || exportDisabled}
+        >
+          {isExporting ? 'Exporting…' : allFormatsExportLabel}
         </button>
 
         {exportStatus === 'exporting' && exportProgress ? (
@@ -112,8 +133,7 @@ export function ControlsPanel({
 
         {exportStatus === 'done' && lastExportSize ? (
           <p className={styles.success}>
-            Exported {pageCount} page{pageCount === 1 ? '' : 's'} × all formats (
-            {lastExportSize.width} × {lastExportSize.height} last PNG)
+            Export complete ({lastExportSize.width} × {lastExportSize.height} last PNG)
           </p>
         ) : null}
 

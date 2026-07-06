@@ -1,19 +1,33 @@
 import { toPng } from 'html-to-image';
+import { downloadBlob } from '@/utils/exportDestination';
 import { waitForFonts } from '@/utils/flattenImage';
 
-export interface ExportPngOptions {
+export interface CapturePngOptions {
   node: HTMLElement;
   width: number;
   height: number;
+}
+
+export interface CapturePngResult {
+  blob: Blob;
+  width: number;
+  height: number;
+}
+
+export interface ExportPngOptions extends CapturePngOptions {
   filename: string;
 }
 
-export async function exportCardPng({
+async function dataUrlToBlob(dataUrl: string): Promise<Blob> {
+  const response = await fetch(dataUrl);
+  return response.blob();
+}
+
+export async function captureCardPng({
   node,
   width,
   height,
-  filename,
-}: ExportPngOptions): Promise<{ width: number; height: number }> {
+}: CapturePngOptions): Promise<CapturePngResult> {
   await waitForFonts();
 
   const dataUrl = await toPng(node, {
@@ -40,10 +54,26 @@ export async function exportCardPng({
     );
   }
 
-  const link = document.createElement('a');
-  link.download = filename;
-  link.href = dataUrl;
-  link.click();
+  const blob = await dataUrlToBlob(dataUrl);
+  return {
+    blob,
+    width: img.naturalWidth,
+    height: img.naturalHeight,
+  };
+}
 
-  return { width: img.naturalWidth, height: img.naturalHeight };
+export async function exportCardPng({
+  node,
+  width,
+  height,
+  filename,
+}: ExportPngOptions): Promise<{ width: number; height: number }> {
+  const { blob, width: naturalWidth, height: naturalHeight } = await captureCardPng({
+    node,
+    width,
+    height,
+  });
+
+  downloadBlob(blob, filename);
+  return { width: naturalWidth, height: naturalHeight };
 }
