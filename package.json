@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "export:layout-calibration": "node scripts/export-layout-calibration.mjs"
+    "export:layout-calibration": "node scripts/export-layout-calibration.mjs",
+    "export:text-pressure": "node scripts/export-text-pressure.mjs"
   },
   "dependencies": {
     "html-to-image": "^1.11.13",

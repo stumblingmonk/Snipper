@@ -10,6 +10,12 @@ import {
   seedLayoutCalibrationFixture,
   waitForLayoutCalibrationStable,
 } from '@/dev/layoutCalibrationFixture';
+import {
+  getTextPressureScenario,
+  seedTextPressureScenario,
+  TEXT_PRESSURE_SCENARIOS,
+  waitForTextPressureStable,
+} from '@/dev/textPressureFixtures';
 
 export interface CapturedExportFile {
   filename: string;
@@ -21,6 +27,9 @@ export interface CapturedExportFile {
 export interface SnipitTestHarness {
   seedLayoutCalibration: () => Promise<void>;
   captureLayoutCalibrationExports: () => Promise<CapturedExportFile[]>;
+  seedTextPressureScenario: (id: string) => Promise<void>;
+  captureTextPressureExports: (scenarioId: string) => Promise<CapturedExportFile[]>;
+  listTextPressureScenarioIds: () => string[];
 }
 
 declare global {
@@ -70,6 +79,55 @@ export function registerTestHarness(deps: {
         scope: 'all-formats',
         currentFormatKey: state.format,
         baseName: 'layout-calibration',
+        date: formatExportDate(),
+        totalPages: state.pages.length,
+      });
+
+      const captured: CapturedExportFile[] = [];
+
+      await runCardExportLoop({
+        node,
+        entries,
+        setRenderTarget: deps.setExportRenderTarget,
+        onProgress: () => {},
+        writeFile: async (blob, filename, index) => {
+          const entry = entries[index];
+          const formatSpec = FORMATS[entry.formatKey];
+          captured.push({
+            filename,
+            width: formatSpec.width,
+            height: formatSpec.height,
+            dataUrl: await blobToDataUrl(blob),
+          });
+        },
+      });
+
+      return captured;
+    },
+
+    async seedTextPressureScenario(id) {
+      seedTextPressureScenario(id);
+      await waitForTextPressureStable();
+      await new Promise((resolve) => window.setTimeout(resolve, 600));
+    },
+
+    listTextPressureScenarioIds() {
+      return TEXT_PRESSURE_SCENARIOS.map((scenario) => scenario.id);
+    },
+
+    async captureTextPressureExports(scenarioId) {
+      const node = deps.getExportNode();
+      if (!node) {
+        throw new Error('Export artboard node is not available');
+      }
+
+      const scenario = getTextPressureScenario(scenarioId);
+      const state = useSnipitStore.getState();
+      const baseName = `text-pressure-${scenario.id}-${scenario.slug}`;
+      const entries = buildExportFilenameList({
+        scope: 'all-formats',
+        currentFormatKey: state.format,
+        baseName,
         date: formatExportDate(),
         totalPages: state.pages.length,
       });
